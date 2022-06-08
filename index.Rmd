@@ -18,6 +18,12 @@ output:
 knitr::opts_chunk$set(warning=FALSE, message=FALSE)
 ```
 
+----
+
+<br>
+
+![](images/CELL_BIOLOGY_RGB.png){ width=50% }
+
 <br>
 
 This workshop is designed as an introduction to RNA-seq data analysis and will guide you through the following steps:
@@ -46,11 +52,6 @@ This workshop is designed as an introduction to RNA-seq data analysis and will g
 
 There is no such thing as a default pipeline. Although we mostly use standard parameters in this tutorial we hope to make you aware of the considerations you should take at each step. Make sure you understand your data and where it has come from. Use the correct tools for your dataset and read the tool documentation to see how different parameters affect your output!
 
-<br>
-
-![](images/CELL_BIOLOGY_RGB.png){ width=50% }
-
-<br>
 
 ----
 
