@@ -1,8 +1,11 @@
-name: "my-website"
+name: "RNA-seq Analysis Workshop"
 navbar:
-  title: "My Website"
+  title: "RNA-seq Analysis Workshop"
   left:
-    - text: "Home"
-      href: index.html
-    - text: "About"
-      href: about.html
+    - text: "Command line analysis"
+      href: 1.command_line.html
+output_dir: "."
+output:
+  html_document:
+    theme: yeti
+    highlight: textmate

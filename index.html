@@ -12,7 +12,7 @@
 <meta name="author" content="WCB Bioinformatics Core Facility" />
 
 
-<title>WCB Chip-Seq Workshop</title>
+<title>WCB RNA-Seq Workshop</title>
 
 <script src="site_libs/header-attrs-2.11/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -241,24 +241,15 @@ $(document).ready(function () {
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="index.html">Home</a>
+      <a class="navbar-brand" href="index.html">RNA-seq Analysis Workshop</a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="ChIP-seq_workshop_intro.html">Getting Started</a>
+  <a href="index.html">RNA-Seq workshop</a>
 </li>
 <li>
-  <a href="ChIP-seq_workshop_QC.html">Quality Control</a>
-</li>
-<li>
-  <a href="ChIP-seq_workshop_map.html">Mapping and Filtering</a>
-</li>
-<li>
-  <a href="ChIP-seq_workshop_visualisation.html">Visualisation</a>
-</li>
-<li>
-  <a href="ChIP-seq_workshop_analysis.html">Analysis</a>
+  <a href="1.command_line.html">Command line analysis</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -272,7 +263,7 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">WCB Chip-Seq Workshop</h1>
+<h1 class="title toc-ignore">WCB RNA-Seq Workshop</h1>
 <h4 class="author">WCB Bioinformatics Core Facility</h4>
 
 </div>
@@ -282,25 +273,41 @@ $(document).ready(function () {
 <script src="https://kit.fontawesome.com/ece750edd7.js" crossorigin="anonymous"></script>
 </head>
 <p><br></p>
-<p>This workshop is designed as an introduction to ChIP-seq data analysis and will guide you through the following steps:</p>
+<p>This workshop is designed as an introduction to RNA-seq data analysis and will guide you through the following steps:</p>
+<div id="rna-seq-analysis-on-the-command-line" class="section level3">
+<h3>RNA-seq analysis on the command line</h3>
 <ul>
 <li>Assessing raw sequence data and performing quality control</li>
 <li>Aligning sequence reads to a reference genome</li>
 <li>Filtering alignments for further analysis</li>
-<li>Assessing the quality of your ChIP-seq experiment</li>
+<li>Assessing the quality of your RNA-seq experiment</li>
 <li>Visualising alignments on a genome browser</li>
-<li>Summarising ChIP-seq profiles across genes</li>
-<li>Peak calling</li>
-<li>Motif discovery</li>
-<li>Introduction to useful packages in R</li>
+<li>Quantifying expression levels</li>
+</ul>
+</div>
+<div id="automated-pipelines-with-nextflow" class="section level3">
+<h3>Automated pipelines with NextFlow</h3>
+<ul>
+<li>Install the nf-core RNA-seq pipeline</li>
+<li>Use singularity containers in your pipeline</li>
+<li>Run the pipeline with NextFlow</li>
+</ul>
+</div>
+<div id="differential-expression-analysis-with-deseq2" class="section level3">
+<h3>Differential expression analysis with DESeq2</h3>
+<ul>
+<li>Load transcript expression files into R</li>
+<li>Run DESeq2 and visualise results</li>
+<li>Extract differentially expressed genes</li>
+<li>Perform functional enrichment on sets of genes</li>
 </ul>
 <p>There is no such thing as a default pipeline. Although we mostly use standard parameters in this tutorial we hope to make you aware of the considerations you should take at each step. Make sure you understand your data and where it has come from. Use the correct tools for your dataset and read the tool documentation to see how different parameters affect your output!</p>
-<p>This is the homepage for Chip-Seq training at the WCB Bioinformatics Core Facility at the University of Edinburgh. These courses are run annually by a qualified tutor but also provided for self study.</p>
 <p><br></p>
 <p><img src="images/CELL_BIOLOGY_RGB.png" style="width:50.0%" /></p>
 <p><br></p>
 <hr />
 <p>For more information contact <a href="mailto:shaun.webb@ed.ac.uk">Shaun Webb</a>.</p>
+</div>
 
 
 

@@ -1,5 +1,5 @@
 ---
-title: "WCB Chip-Seq Workshop"
+title: "WCB RNA-Seq Workshop"
 author:  "WCB Bioinformatics Core Facility"
 output:
   html_document:
@@ -20,21 +20,31 @@ knitr::opts_chunk$set(warning=FALSE, message=FALSE)
 
 <br>
 
-This workshop is designed as an introduction to ChIP-seq data analysis and will guide you through the following steps:
+This workshop is designed as an introduction to RNA-seq data analysis and will guide you through the following steps:
+
+### RNA-seq analysis on the command line
 
 * Assessing raw sequence data and performing quality control
 * Aligning sequence reads to a reference genome
 * Filtering alignments for further analysis
-* Assessing the quality of your ChIP-seq experiment
+* Assessing the quality of your RNA-seq experiment
 * Visualising alignments on a genome browser
-* Summarising ChIP-seq profiles across genes
-* Peak calling
-* Motif discovery
-* Introduction to useful packages in R
+* Quantifying expression levels
+
+### Automated pipelines with NextFlow
+
+* Install the nf-core RNA-seq pipeline
+* Use singularity containers in your pipeline
+* Run the pipeline with NextFlow
+
+### Differential expression analysis with DESeq2
+
+* Load transcript expression files into R
+* Run DESeq2 and visualise results
+* Extract differentially expressed genes
+* Perform functional enrichment on sets of genes
 
 There is no such thing as a default pipeline. Although we mostly use standard parameters in this tutorial we hope to make you aware of the considerations you should take at each step. Make sure you understand your data and where it has come from. Use the correct tools for your dataset and read the tool documentation to see how different parameters affect your output!
-
-This is the homepage for Chip-Seq training at the WCB Bioinformatics Core Facility at the University of Edinburgh. These courses are run annually by a qualified tutor but also provided for self study.
 
 <br>
 
