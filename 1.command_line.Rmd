@@ -28,12 +28,6 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ----
 
-## RNA-seq data
-
-Intro on RNA sequencing, technologies, stranded/paired end etc...
-
-----
-
 ## 1. Getting Started
 
 We are using the Linux command line to run most of the tools we use today. If you are new to Linux please complete the Intro to Command Line [Workshop](http://bifx-core.bio.ed.ac.uk/hyweldd/training/Bioinformatics_on_the_Command_Line/).
@@ -101,14 +95,33 @@ Please install [IGV](https://software.broadinstitute.org/software/igv/download) 
 
 ## 2. RNA-seq sequencing data
 
-The datasets used in this exercise are derived from a single end ChIP-seq experiment (actually ChIP-exo) in *S.cerevisiae*. There are 2 biological replicates (though we recommend using 3 or more!) Reb1_R1 and Reb1_R2 as well as their corresponding input controls Input_R1 and Input_R2. For this experiment immunoprecipitation was performed with antibodies against Reb1. Reb1 recognizes a specific sequence (TTACCCG) and is involved in many aspects of transcriptional regulation by all three yeast RNA polymerases and promotes formation of nucleosome-free regions (NFRs). You can find the original publication [here](http://www.sciencedirect.com/science/article/pii/S0092867411013511). For the purpose of this workshop we have randomly subsampled and filtered out poor quality reads to speed up runtime.
+The data we will we use in this workshop is part of a larger study described in [Kenny PJ et al., Cell Rep 2014](https://pubmed.ncbi.nlm.nih.gov/25464849/). The authors investigated interactions between various genes involved in Fragile X syndrome, a disease of aberrant protein production, which results in cognitive impairment and autistic-like features. They sought to show that RNA helicase **MOV10** regulates the translation of RNAs involved in Fragile X syndrome.
+
+The RNA was extracted from HEK293F cells that were transfected with a MOV10 transgene (MOV10 over-expression), MOV10 siRNA (MOV10 knockdown), or an irrelevant siRNA (Control). For now, we will just look at the over-expression and control samples.
+
+### Raw Data
+
+The raw RNA-seq data is available publicly via [GEO](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE50499) and the [SRA](https://www.ncbi.nlm.nih.gov/sra?term=SRP029367) (sequence read archive). 
+
+### Metadata
+
+It is also important to collect **metadata** (information about the data) that describes the samples and the experimental preparation. Some key things to note about these datasets:
+
+* HEK293F is a **human** cell line so we will align our reads to a human reference.
+* The libraries are **stranded** so we expect reads to align to genes in a strand specific manner. 
+* The libraries were created with the **Illumina Tru-seq adapters**.
+* **100bp single-end reads** were generated.
+* They contain ~40 million reads per sample. For the purpose of this workshop we have randomly sub-sampled **200000** reads to speed up computation.
+* For each group we have **three replicates** as described below. 
 
 | Dataset | Description |
 | ------- | ----------- |
-| Reb1_R1 | ChIP experiment, replicate 1 |
-| Reb1_R2 | ChIP experiment, replicate 2 |
-| Input_R1 | Input DNA, replicate 1 |
-| Input_R2 | Input DNA, replicate 2 |
+| Control_1 | Control, replicate 1 |
+| Control_2 | Control, replicate 2 |
+| Control_3 | Control, replicate 3 |
+| MOV10_OE_1 | MOV10 overexpression, replicate 1 |
+| MOV10_OE_2 | MOV10 overexpression, replicate 2 |
+| MOV10_OE_3 | MOV10 overexpression, replicate 3 |
 
 ----
 
@@ -127,24 +140,7 @@ Next, create a subfolder called **fastq** for all of our sequence files and link
 
 ```bash
 mkdir fastq
-cp /homes/library/training/ChIP-seq_workshop/data/*fq.gz fastq/.
-```
-
-When you receive data from a sequencing centre the file should also be provided with an alphanumeric string known as an **md5 checksum**. We can think of this as a files passport or fingerprint and use it to verify our data and ensure it wasn't corrupted or truncated during download. The md5 checksums for these files are below. Lets check that now using the `md5sum` command:
-
-|md5 checksum|filename|
-|------------|--------|
-|914b4dda687a76b0d50e545e3ce705d6|Input_R1.fq.gz|
-|f421ed18b71a801b236612cdde49dbaf|Input_R2.fq.gz|
-|dd363301ad237ecb6c81c59ae97995a2|Reb1_R1.fq.gz|
-|06623f9e556876dd6c4d1dfdc4348698|Reb1_R2.fq.gz|
-
-```bash
-cd fastq #Move into the fastq directory
-md5sum *.fq.gz > md5
-cat md5 #prints out the contents of md5
-#To check the files and md5 sums match at any time
-md5sum -c md5 
+ln -s /library/training/RNA-seq_workshop/data/lesson_1/fastq/*fq.gz fastq/
 ```
 
 ----
@@ -154,8 +150,7 @@ md5sum -c md5
 Sequencing data will typically be provided to you in **fastq** format (.fq or .fastq) or as a compressed gzipped fastq (.fq.gz) in order to save space. We can view a gzipped file with the zless command, let's take a look:
 
 ```bash
-cd RNA-seq_workshop
-cd fastq # Move into the fastq directory (if not already)
+cd fastq # Move into the fastq directory (if you haven't already)
 zless Control_1.fq.gz | head -n 12
 ```
 
@@ -575,7 +570,7 @@ You should be aware that [mapping qualities differ between mapping tools](https:
 
 <div class="blue">
 ```bash
-cat samples.txt | parallel -j 5 "samtools view -b -q 20 STAR/{}.primary.bam -o STAR/{}.unique.bam; samtools index STAR/{}.unique.bam"
+cat samples.txt | parallel -j 5 "samtools view -b -q 255 STAR/{}.primary.bam -o STAR/{}.unique.bam; samtools index STAR/{}.unique.bam"
 ```
 </div>
 
@@ -649,8 +644,82 @@ Some analysis pipelines use [genomeCoverageBed](https://bedtools.readthedocs.io/
 
 ----
 
-### Viewing data on IGV
+### Visualising data on IGV
 
+[IGV](https://www.broadinstitute.org/igv/) (Integrative genomics viewer) is a powerful genome browser from the Broad institute. It is perfect for viewing your sequencing files as loading data is easy, common formats are understood, views are customisable and navigation is quick.
+
+Let's also add of our bam files to the visualisation folder.
+
+<div class="blue">
+```bash
+cd visualisation
+ln -s ../STAR/*unique.bam* .
+cd ../
+```
+</div>
+
+It is best to download the [desktop app](https://www.broadinstitute.org/igv/) for use on your own machine but if you are using a university managed computer you can access the web app at [https://igv.org/app/](https://igv.org/app/).
+
+Open IGV and set the genome to **hg38**, then find your *visualisation* folder online.
+In the desktop version you can drag and drop files into IGV. If you are using the webapp you will need to download the files you require and open them using the *tracks* menu. 
+
+Load the two bigWig tracks for MOV10_OE_1 into IGV:
+
+<img src="images/igv_genome.png" width=1200>
+
+First, let's navigate the chromosome:
+
+* Use the *+* / *-* zoom bar at the top right
+* Drag and highlight an area to zoom on the genome ruler
+* Type a position or gene identifier in to the search box
+* If we zoom in close enough our BAM file will load and we can investigate alignments of individual reads
+
+Now let's customise our view:
+
+1. Select **Tracks->Fit Data To Window** To automatically set track heights to fill the view (not available on web app).
+2. Right click on the Refseq genes track (or use the cog on web app) and switch between display modes **Collapsed**, **Expanded** and **Squished**. (Use the horizontal panel divider to adjust height)
+3. Use the right click menu or cog on the bigwig track name to customise the display. Try the following:
+  1. Rename the track
+  2. Change the track colour
+  3. Change the graph type
+  4. Change the windowing function
+  5. Adjust the data range
+4. Set the scale to **Autoscale**. This automatically sets the Y-axis to the height of the tallest peak in your view.
+5. Select multiple tracks and set the scale to **Group autoscale**. This will automatically scale tracks together.
+
+<div class="discussion">
+<h2><i class="far fa-bell"></i> Discussion</h2>
+There are two large spikes on chr1 (forward strand) and chr6 (reverse strand).
+
+* What are these genes?
+* Would you expect to see similar spikes in the control?
+* Load the control bigWigs and check.
+</div>
+<br>
+
+<img src="images/MOV10.png" width=1200>
+
+Now load a corresponding BAM file `MOV10_OE_1.unique.bam` for one of your tracks. Make sure the `.bai` index file is in the same folder as the BAM. Navigate to the MOV10 gene, you should be able to see all of the aligned reads. 
+
+<img src="images/igv_bam.png" width=1200>
+
+Use the menu for the BAM file to customise the way reads are displayed.
+
+<div class="discussion">
+<h2><i class="far fa-bell"></i> Discussion</h2>
+* Can you identify **mismatches** in read alignments?
+* Can you identify reads mapping across **splice junctions**?
+* Can you create a **sashimi** plot?
+</div>
+<br>
+
+<img src="images/sashimi.png" width=1200>
+
+----
+
+### Other genome browsers 
+
+We recommend IGV as it allows you to quickly explore your data. Several other genome browsers exist and the [Ensembl](http://www.ensembl.org) and [UCSC](https://genome.ucsc.edu/) websites are particularly useful for viewing your data online alongside published experimental data and genomic annotations that exist in their databases.
 
 <div class="key-points">
 <h2><i class="fas fa-thumbtack"></i>Key points:</h2>
@@ -747,7 +816,32 @@ The sequence composition of a transcript affects how many reads are sampled from
 
 ## 10. Finish your script 
 
-We now have our alignments (BAM), visualisation files (bigWig) and transcript quantification (quant.sf) and this is normally a branching point for downstream analyses.  
+We now have our alignments (BAM), visualisation files (bigWig) and transcript quantification (quant.sf) and this is normally a branching point for downstream analyses.
+
+### Final reports
+
+The last thing we want to do is to run **MultiQC** on our folder to compile the reports from Trim_galore, STAR and Salmon:
+
+<div class="blue">
+```bash
+multiqc -f
+```
+</div>
+
+<div class="discussion">
+<h2><i class="far fa-bell"></i> Discussion</h2>
+Take a look at the multiqc report in your public folder:
+
+* Why are there two different values for % Aligned in the general statistics?
+* Are you happy with the % of aligned reads?
+* Why does the MOV10 sample have more duplicate reads?
+* Look at the 'Per Base Sequence Content' plot. What's going on at the 3' end?
+</div>
+<br>
+
+----
+
+### Running your complete script
 
 Your pipeline.sh script should look something like [this](http://bifx-core.bio.ed.ac.uk/training/ChIP-seq_workshop/pipeline.sh) and we can run everything from start to end in one go. This could take....
 
@@ -772,6 +866,7 @@ tail RNA-seq_workshop_tmp/pipeline.log #Shows the end of a file
 ----
 
 ### Tidy Up! 
+
 Files are large and disk space is expensive, remove any unwanted or temporary files from your folder. We should always keep the raw data (fastq) and our final processed datasets (BAM, bigWig, quant.sf etc) as well as the code we used to generate them. Where you can, convert files to compressed or binary formats to save space e.g. fq to fq.gz, SAM to BAM, wig to bigWig.
  
 <div class="blue">
