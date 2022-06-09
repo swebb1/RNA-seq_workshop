@@ -52,6 +52,7 @@ This workshop is designed as an introduction to RNA-seq data analysis and will g
 
 There is no such thing as a default pipeline. Although we mostly use standard parameters in this tutorial we hope to make you aware of the considerations you should take at each step. Make sure you understand your data and where it has come from. Use the correct tools for your dataset and read the tool documentation to see how different parameters affect your output!
 
+This workshop is partly modeled on the training materials already provided by the [Harvard Chan Bioinformatics Core](https://hbctraining.github.io/main/). Please check out their website for comprehensive training materials in RNA-seq, NGS analysis and bioinformatics.
 
 ----
 

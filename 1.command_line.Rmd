@@ -16,6 +16,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+<br>
 <div class="objectives">
 <h2><i class="far fa-check-square"></i> Learning Objectives</h2>
  * Set up a project folder on the bioinformatics servers
@@ -31,6 +32,8 @@ knitr::opts_chunk$set(echo = TRUE)
 ## 1. Getting Started
 
 We are using the Linux command line to run most of the tools we use today. If you are new to Linux please complete the Intro to Command Line [Workshop](http://bifx-core.bio.ed.ac.uk/hyweldd/training/Bioinformatics_on_the_Command_Line/).
+
+For a quick refresh of linux commands take a look [here](https://files.fosswire.com/2007/08/fwunixref.pdf).
 
 ### Logging in
 We will use the WCB bioinformatics servers for this practical. If you do not have an account please contact a member of the core facility to get this set up. You will need access to the university network or VPN to access the server.
@@ -57,21 +60,18 @@ After logging in you should be in your $HOME directory, check with;
 ```bash
 pwd
 ```
-This should show the PATH of your present working directory, which should now be your home directory as you have just logged in. You can return to this place at any time using the change directory command. 
+This shows the **path** of your present working directory, which should now be your home directory as you have just logged in. You can return to this place at any time using the change directory command. 
 
 ```bash
 cd
 ```
-You have permission to create files and directories under your home folder. Lets create some now which we will use later on. 
+You have permission to create files and directories under your home folder. Let's create the `public_html` directory to use later on. 
 
 ```bash
 mkdir ~/public_html
-mkdir ~/public_html/TMP
 ```
 
-Here we have used the absolute path name for each directory using ~/ as a shortcut for your $HOME directory. Nested directories are separated by the forward slash '/' sign. 
-
-As you have created  `~/public_html`, contents of this directory are available online with any web browser 
+Here we have used ~/ as a shortcut for your $HOME directory. As you have created  `~/public_html`, contents of this directory are now available online with any web browser 
 
 To see it, enter the following URL, changing *yourUserName* to whatever your username is:
 https://bifx-core3.bio.ed.ac.uk/~yourUserName
@@ -82,6 +82,7 @@ https://bifx-core3.bio.ed.ac.uk/~yourUserName
 
 Please install [IGV](https://software.broadinstitute.org/software/igv/download) on your own machine, alternatively you can use the [web application](https://igv.org/app/).
 
+<br>
 <div class="key-points">
 <h2><i class="fas fa-thumbtack"></i>Key points:</h2>
 ##
@@ -143,6 +144,12 @@ mkdir fastq
 ln -s /library/training/RNA-seq_workshop/data/lesson_1/fastq/*fq.gz fastq/
 ```
 
+As well as the raw data we will also need access to annotations and reference sequences for the human genome/transcriptome. These are provided for this workshop and should also be linked to your folder:
+
+```bash
+ln -s /library/training/RNA-seq_workshop/annotation .
+```
+
 ----
 
 ### FastQ files
@@ -161,12 +168,14 @@ zless Control_1.fq.gz | head -n 12
 * Line 3 begins with a '+' character and is optionally followed by the same sequence identifier
 * Line 4 encodes the Phred quality score for the sequence in Line 2 as ASCII characters
 
+<br>
 <div class="key-points">
 <h2><i class="fas fa-thumbtack"></i>Key points:</h2>
 ##
  * Create a project directory
- * Copy the raw data files to a fastq folder
+ * Link the raw data files to a `fastq` folder
  * Create a symlink to the annotation data
+ * Understand the fastq file format
 </div>
 <br>
 
@@ -185,7 +194,7 @@ cd .. #Move up a directory again
 fastq_screen --conf /homes/genomes/tool_configs/fastq_screen/fastq_screen.conf fastq/*fq.gz --outdir fastq # * is a wild card character so includes all files that end fq.gz
 ```
 Once complete, take a look at the output images in your browser via your public_html folder. This shows that most of your reads align to the human genome and that no reads align uniquely to other organisms:
-<!--Update pic here?-->
+
 <img src="images/fastq_screen.png" width=1200>
 
 ----
@@ -223,6 +232,7 @@ MultiQC searches for report files in a directory and compiles them into a single
 
 If we look at the *adapter content* and *over represented sequences* sections we can see a small amount of contamination particularly at the ends of the sequencing reads.
 
+<br>
 <div class="key-points">
 <h2><i class="fas fa-thumbtack"></i>Key points:</h2>
 ##
@@ -299,6 +309,7 @@ multiqc -o fastq fastq
 
 The **#** symbol indicates a comment line and anything preceded by a # will not be run by the command line. It is good practice to comment your code.
 
+<br>
 <div class="challenge">
 <h2><i class="fas fa-pencil-alt"></i> Challenge:</h2>
 See if you can adapt the QC portion of the script to use parallel. 
@@ -318,6 +329,7 @@ cat samples.txt | parallel -j 5 "fastqc fastq/{}.fq.gz"
 </div>
 </details>
 </div>
+<br>
 
 To save and exit the file press **ctrl-x**, followed by **ctrl-c** and then **y** to save.
 
@@ -391,6 +403,7 @@ It may be worth looking into a few other tools for quality control of RNA-seq da
 * [SortMeRNA](https://bioinfo.lifl.fr/RNA/sortmerna/) can remove sequences that map to ribosomal RNAs. Ideally, your library preparation should include steps to deplete ribosomal RNAs but you can also use tools to remove these from your analysis.
 * [RSeQC](http://rseqc.sourceforge.net/) is a QC tool specifically for RNA-seq.
 
+<br>
 <div class="key-points">
 <h2><i class="fas fa-thumbtack"></i>Key points:</h2>
 ##
@@ -399,6 +412,7 @@ It may be worth looking into a few other tools for quality control of RNA-seq da
  * Understand scripting
  * Trim and filter your sequencing reads
 </div>
+<br>
 
 ----
 
@@ -462,12 +476,14 @@ When your alignment has completed, take a look at the output STAR report:
 less STAR/Control_1.Log.final.out
 ```
 
+<br>
 <div class="discussion">
 <h2><i class="far fa-bell"></i> Discussion</h2>
 * How many aligned reads do you have?
 * How many of these align to a single location on the genome?
 * How many reads map to multiple locations?
 </div>
+<br>
 
 ----
 
@@ -501,6 +517,7 @@ The command `samtools idxstats` outputs the number of reads aligned to each sequ
 samtools idxstats STAR/Control_1.Aligned.sortedByCoord.out.bam
 ```
 
+<br>
 <div class="discussion">
 <h2><i class="far fa-bell"></i> Discussion</h2>
 The third column represents the number of alignments. 
@@ -576,6 +593,7 @@ cat samples.txt | parallel -j 5 "samtools view -b -q 255 STAR/{}.primary.bam -o 
 
 **Duplicate reads** are often observed as tall spikes in your read depth profile where reads are stacked directly on top of each other. A high level of duplication in your library may be due to over amplification by PCR or contamination. In RNA-seq experiments the chances of selecting identical sequences are much higher as our sample size is much smaller (length of transcriptome vs length of genome) and multiple copies of the same sequence (transcripts) exist independently. Thus, it is common practice to retain duplicate reads.
 
+<br>
 <div class="resources">
 <h2><i class="fas fa-book"></i> Further Learning</h2>
 Learn more about duplication and removing duplicate reads:
@@ -593,6 +611,7 @@ In some cases you may wish to remove reads that align to specific regions of the
 
 * [bedtools intersect](https://bedtools.readthedocs.io/en/latest/content/tools/intersect.html) can remove reads from BAM files that align to specific genomic locations.
 
+<br>
 <div class="key-points">
 <h2><i class="fas fa-thumbtack"></i>Key points:</h2>
 ##
@@ -687,6 +706,7 @@ Now let's customise our view:
 4. Set the scale to **Autoscale**. This automatically sets the Y-axis to the height of the tallest peak in your view.
 5. Select multiple tracks and set the scale to **Group autoscale**. This will automatically scale tracks together.
 
+<br>
 <div class="discussion">
 <h2><i class="far fa-bell"></i> Discussion</h2>
 There are two large spikes on chr1 (forward strand) and chr6 (reverse strand).
@@ -705,6 +725,7 @@ Now load a corresponding BAM file `MOV10_OE_1.unique.bam` for one of your tracks
 
 Use the menu for the BAM file to customise the way reads are displayed.
 
+<br>
 <div class="discussion">
 <h2><i class="far fa-bell"></i> Discussion</h2>
 * Can you identify **mismatches** in read alignments?
@@ -721,6 +742,7 @@ Use the menu for the BAM file to customise the way reads are displayed.
 
 We recommend IGV as it allows you to quickly explore your data. Several other genome browsers exist and the [Ensembl](http://www.ensembl.org) and [UCSC](https://genome.ucsc.edu/) websites are particularly useful for viewing your data online alongside published experimental data and genomic annotations that exist in their databases.
 
+<br>
 <div class="key-points">
 <h2><i class="fas fa-thumbtack"></i>Key points:</h2>
 ##
@@ -765,6 +787,7 @@ Like STAR, Salmon requires an index for alignment. The indexes require fasta seq
 #salmon index -t Homo_sapiens.GRCh38.cdna.ncrna.gentrome.fa.gz -d decoys.txt -p 24 -i hg38.cdna.ncrna.salmon.index -k 31
 ```
 
+<br>
 <div class="resources">
 <h2><i class="fas fa-book"></i> Further Learning</h2>
 Creating Salmon indexes is more complicated than STAR but the bioinformatics team can help you out if you need to do this. Several pre-computed indexes exist in /homes/genomes. You can also read more about the method [here](https://combine-lab.github.io/alevin-tutorial/2019/selective-alignment).
@@ -804,11 +827,20 @@ For each transcript we have five columns:
 * TPM (transcripts per million), which is computed using the effective length
 * The estimated read count (‘pseudocount’)
 
+<br>
 <div class="discussion">
 <h2><i class="far fa-bell"></i> Discussion</h2>
 What exactly is the effective length?
 
 The sequence composition of a transcript affects how many reads are sampled from it. While two transcripts might have identical length, depending on the sequence composition we are more likely to generate fragments from one versus the other. The transcript that has a higer likelihood of being sampled, will end up with the larger effective length. The effective length is thus a corrected transcript length to account for sequence-specific and GC biases.
+</div>
+
+<br>
+<div class="key-points">
+<h2><i class="fas fa-thumbtack"></i>Key points:</h2>
+##
+ * Use pseudo-alinger tools like **Salmon** to estimate transcript abundance
+ * Understand the Salmon output files
 </div>
 <br>
 
@@ -828,6 +860,7 @@ multiqc -f
 ```
 </div>
 
+<br>
 <div class="discussion">
 <h2><i class="far fa-bell"></i> Discussion</h2>
 Take a look at the multiqc report in your public folder:
@@ -875,6 +908,16 @@ rm trim_galore/*trim*fq.gz #Remove trimmed fastq temporary files
 rm STAR/*/*.wig #Remove wig files once converted to bigWig
 ```
 </div>
+
+<br>
+<div class="key-points">
+<h2><i class="fas fa-thumbtack"></i>Key points:</h2>
+##
+ * Generate report files for your entire analysis with **MultiQC**
+ * Save your analysis as a script and run it in one go
+ * Learn to manage your data
+</div>
+<br>
 
 
 
