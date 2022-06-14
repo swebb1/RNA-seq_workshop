@@ -3,7 +3,9 @@ navbar:
   title: "RNA-seq Analysis Workshop"
   left:
     - text: "Command line analysis"
-      href: 1.command_line.html
+      href: lesson1_command_line.html
+    - text: "Differential expression"
+      href: lesson3_deseq2.html
 output_dir: "."
 output:
   html_document:
