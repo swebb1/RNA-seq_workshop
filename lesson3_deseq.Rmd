@@ -1,0 +1,374 @@
+---
+title: "Differential expression with DESeq2"
+output: 
+  html_document:
+    df_print: paged
+    css: "style.css"
+    toc: true
+    toc_depth: 2
+---
+
+<head>
+<script src="https://kit.fontawesome.com/ece750edd7.js" crossorigin="anonymous"></script>
+</head>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+<br>
+<div class="objectives">
+<h2><i class="far fa-check-square"></i> Learning Objectives</h2>
+ * Install the DESeq2 package for use in R and RStudio
+ * Create a sample sheet for your differential expression analysis
+ * Import transcript abundance data from Salmon into a DESeq2 object
+ * Run differential expression analysis with DESeq2
+ * Assess replicate and sample groups (PCA plots and hierarchical clustering)
+ * Extract and visualise results (MA plots, scatter plots, volcano plots)
+ * Search for enriched functional annotations in differentially expressed genes (GO terms, gProfiler2)
+</div>
+<br>
+
+----
+
+## 1. Getting Started
+
+Differential expression (DE) analysis is commonly performed downstream of RNA-seq data analysis and quantification. We use statistical methods to test for differences in expression of individual genes between two or more sample groups. In this lesson, we will use the statistical programming language [R](https://www.r-project.org/) and the [DESeq2](https://bioconductor.org/packages/release/bioc/html/DESeq2.html) package, specifically designed for differential expression analysis.
+
+### R and RStudio
+
+R is an extremely powerful programming language for working with large datasets, applying statistical tests and creating publication ready graphics. [RStudio](https://www.rstudio.com/) is an Integrated Development Environment (IDE) for R which provides a graphical and interactive environment for R programming.
+
+We recommend that you understand the basics of R and RStudio and follow at least the *getting started* and *R and RStudio* lessons in our [introduction to R workshop](https://swebb1.github.io/R_Training/index.html). This will also guide you through how to install R and RStudio on your own machine.
+
+You can choose to run RStudio on your own laptop or log into our [RStudio server](https://bifx-rstudio.bio.ed.ac.uk) on the bioinformatics servers.
+
+### Installing DESeq2
+
+DESeq2 is part of the Bioconductor repository of biology specific R packages. You can install DESeq2 using the Bioconductor manager with the code below in the R Console. We will also use several other R libraries.
+
+```{r}
+## Install Bioconductor packages
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("DESeq2")
+BiocManager::install("tximeta")
+BiocManager::install("tximport")
+
+## Install CRAN packages
+install.packages("tidyverse")
+install.packages("RColorBrewer")
+
+
+
+```
+
+### Create a project
+
+Use the project drop-down menu at the top right to create a new project called *Differential expression workshop* or something similar and choose an appropriate working directory.
+
+### Input data
+
+DESeq2 works with matrices of *read counts* per gene for multiple samples. In the past we used read counting software like [HTSeq-count](https://htseq.readthedocs.io/en/release_0.11.1/count.html) or [featureCounts](http://bioinf.wehi.edu.au/featureCounts/) to quantify counts of aligned reads (e.g. from STAR) over exons for each gene model. The standard practice now is to use *pseudocounts* from tools like **Salmon** which do a much better job at estimating expression levels by:
+
+* Correcting for sequencing biases e.g. GC content
+* Correcting differences in individual transcript lengths
+* Including reads that map to multiple genes
+* Producing much smaller output files than aligners
+
+DESeq2 requires non-normalised or “raw” count estimates at the gene-level for performing DE analysis. We will use the R package **tximport** to import read counts and summarise transcript abundance estimates for each gene.
+
+In the previous lessons we generated tables of transcript abundances (`quant.sf`) for each sample with Salmon, using a reduced set of RNA-seq sequencing reads. As input to DESeq2 we will use similar tables generated from the full dataset.
+
+Download and extract the data folder:
+```{r}
+download.file("https://bifx-core3.bio.ed.ac.uk/training/RNA-seq_analysis/salmon.tar.gz","salmon.tar.gz",method="curl",extra=c("--insecure"))
+untar("salmon.tar.gz")
+```
+
+### Experimental design
+
+We will also include a further two samples from the original publication which correspond to a **MOV10 knock-down** cell line using siRNA. We will use this data to investigate changes in transcription upon perturbation of MOV10 expression relative to the control (irrelevant siRNA) experiment.
+
+| Dataset | Description |
+| ------- | ----------- |
+| Control_1 | Control, replicate 1 |
+| Control_2 | Control, replicate 2 |
+| Control_3 | Control, replicate 3 |
+| MOV10_OE_1 | MOV10 over-expression, replicate 1 |
+| MOV10_OE_2 | MOV10 over-expression, replicate 2 |
+| MOV10_OE_3 | MOV10 over-expression, replicate 3 |
+| MOV10_KD_2 | MOV10 knock-down, replicate 2 |
+| MOV10_KD_3 | MOV10 knock-down, replicate 3 |
+
+MOV10 is an RNA helicase reported to associate with FMR1, a protein found in the brain and linked to fragile X syndrome. 
+
+### Comprehensive tutorials
+
+This is a *lightweight* introduction to differential expression analysis. For a comprehensive overview of the DESeq2 method, functionality and complex experimental designs, check out the following resources:
+
+* [DESeq2 tutorial](http://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html)
+* [RNAseq analysis with DESeq2](http://master.bioconductor.org/packages/release/workflows/vignettes/rnaseqGene/inst/doc/rnaseqGene.html)
+* [HBC Differential expression workshop](https://hbctraining.github.io/DGE_workshop_salmon_online/schedule/links-to-lessons.html)
+
+## 2. Create a sample file
+
+The first step in our analysis is to create a tab separated file of sample IDs and metadata. This already exists in the folder you downloaded earlier but you would normally create this manually. We can then import the sample sheet to R with the *read_tsv()* function from **readr**.
+
+```{r}
+library(tidyverse)
+ss<-read_tsv("salmon/samples.tsv",col_names = T,col_types = "fff")
+ss
+```
+
+## 3. Importing count data with tximeta
+
+We will start by importing the count data for each sample into R. We will use the package [**tximeta**](https://bioconductor.org/packages/tximeta) to read the Salmon output files and create a matrix of read counts for each gene. This package automatically recognises if your count data comes from a commonly used genome and will download and add annotation files. Alternatively, you can use [**tximport**](https://bioconductor.org/packages/3.15/tximport).
+
+
+```{r}
+library(DESeq2)
+library(tximeta)
+
+disc<-brewer.pal(n = 9,name="Set1")
+cont<-viridis(n=10)
+
+## tximeta expects a table with at least 2 columns (names and files). We will also add the Group and Replicate.
+coldata<-ss %>% dplyr::select(names=Sample,condition=Group,replicate=Replicate) %>%
+  mutate(files=file.path("salmon", ss$Sample, "quant.sf"))
+
+## Read in Salmon counts with tximeta - this creates an object of type summarizedExperiment
+se<-tximeta(coldata)
+se
+```
+
+The [summarizedExperiment](https://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html) object in R contains a matrix of count data with sample names as columns and *features* as rows. It can also hold metadata and annotation data. At the moment our counts are per-transcript but DESeq2 works on a per-gene level. We can summarise our counts into genes with the *summarizeToGene* function in **tximeta** and **tximport**.
+
+```{r}
+gse<-summarizeToGene(se)
+gse
+```
+
+Compare the number of rows in `se` and `gse`. You can access data within a *summarizedExperiment* object with accessor functions such as `colData()`, `rowRanges()` and `assay()`.
+
+Now that we have per-gene count data in a *summarizedExperiment* object, we can import this into DESeq2. We need to supply the `gse` object we have just created as well as a *design*.
+
+The simplest design is just to compare our samples by the condition column (Control, MOV10_KD, MOV10_OE). The design is a *formula* in R so is preceded with the `~` character. 
+
+!!!Complex experimental desing!!!
+
+----
+
+## 4. Creating a DESeq object and running DESeq
+
+```{r}
+## Create the DESeq dataset object
+dds <- DESeqDataSet(gse, design = ~ condition)
+dds
+```
+
+The condition column is represented in R as a *factor*, or categorical variable, which has *levels*.
+
+```{r}
+levels(dds$condition)
+```
+By default, the levels are set in alphabetical order and DESeq2 will always assume that the first level is your control group to which it will compare datasets. In this case we are okay, otherwise you will need to *relevel* your condition column or explicitly reference the condition comparisons of interest in your results (see below).
+
+Let's create a list of comparisons we want to look at. Here we will put our *base-level* or control sample last. We will also set a few other variables to help name our outputs.
+```{r}
+comp<-list(c("condition","MOV10_OE","Control"),
+           c("condition","MOV10_KD","Control"))
+
+## Simple project ID
+project="MOV10"
+
+## Labels for QC plots - we can add all possible confounding factors from our colData
+labels= c("condition","replicate")
+## Merge colData into label names in a data frame
+cnames <- colData(dds) %>% 
+  as_tibble() %>% 
+  unite(all_of(labels), col = label, sep = "-") %>% 
+  pull(label)
+  
+  
+  lapply(as.data.frame(colData(dds)[,labels], stringsAsFactors=FALSE),1,paste,collapse="-") 
+```
+
+Now we are ready to run DESeq. The DESeq function has several internal methods to:
+
+* **Estimate size factors** to normalise gene counts per sample
+* **Estimate gene-wise dispersions** to measure variance in the dataset
+* **Shrink gene-wise dispersions** to improve the dispersion estimates
+* **Fit a *negative binomial* statistical model** to the data
+* **Perform statistical testing** with the *Wald Test* or *Likelihood Ratio Test*
+
+!!! outline these steps!!!
+!! Count normalisation !!
+
+
+```{r}
+## run DESeq
+dds <- DESeq(dds)
+## save dds object as a file - saveRDS can save R objects
+saveRDS(dds,file =paste0(project,".dds.RDS"))
+```
+
+### Plot dispersions
+
+It can be useful to plot the gene-level dispersion estimates to ensure the DESeq model is right for your data. You should find that dispersion is generally lower for genes with higher read counts, that final dispersion levels have been shrunk towards the fitted model and that a few outliers exist which have not been shrunk. If the red line is not a good generalisation for your data then DE analysis with DESeq2 may not be appropriate.
+
+http://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#data-transformations-and-visualization
+
+```{r}
+#Plot dispersions
+plotDispEsts(dds, main="Dispersion plot")
+```
+
+----
+
+## 5. DESeq quality control
+
+Before we look at the results of differential expression tests we first want to perform some quality control by visualising and assessing the entire dataset. The raw counts are not optimal for visualisation and clustering so we will apply a *regularised log transformation* which reduces the bias from genes with extremely low and high counts. The *rld()* function can take a while to run with large datasets.
+
+!!! More info on rld and vst
+
+```{r}
+##Log transformed data
+rld <- rlog(dds, blind=F)
+saveRDS(rld,file =paste0(project,".rld.RDS"))
+```
+
+----
+
+### Heatmap of Sample Distances
+
+We can use our transformed data to perform sample clustering. Here, we calculate sample *distances* with the `dist()` function applied to the transpose of the transformed count matrix. A heatmap of this distance matrix gives us an overview of similarities and dissimilarities between samples. 
+
+We have to provide a hierarchical clustering `hc` to the heatmap function based on the sample distances, or else the heatmap function would calculate a clustering based on the distances between the rows/columns of the distance matrix.
+
+```{r}
+library("pheatmap") #  heatmap plotting package
+library("RColorBrewer") # colour scales
+
+sampleDists <- dist(t(assay(rld)))
+sampleDistMatrix <- as.matrix(sampleDists)
+rownames(sampleDistMatrix) <- as.list(cnames)
+colnames(sampleDistMatrix) <- as.list(cnames)
+cols <- colorRampPalette( rev(brewer.pal(9, "Blues")) )(255) ## Set a colour pallette in shades of blue
+pheatmap(sampleDistMatrix,
+         clustering_distance_rows=sampleDists,
+         clustering_distance_cols=sampleDists,
+         col=cols)
+```
+
+----
+
+### Principle Component Analysis
+
+Another way to visualize sample-to-sample distances is a principal components analysis (PCA). In this method, the data points (here, the samples) are projected onto a 2D plane such that they spread out in the two directions that explain most of the variation in the data. 
+
+The x-axis is the direction that separates the data points the most. The values of the samples in this direction are written PC1 (principle component 1). The y-axis is a direction that separates the data the second most, PC2. The percent of the total variance that is contained in each direction is printed on the axis label. Note that these percentages do not add to 100%, because there are more dimensions that contain the remaining variance. 
+
+We expect to see our samples divide by their biological *condition* or some other source of variation that we are aware of (e.g. sex, cell type, batches of library preparation etc). If you do not see your samples separating by your variable of interest you may want to plot out PC3 and PC4 to see if it appears there. If there is a large amount of variance introduced by other factors or batch effects then you will need to control for these in your experimental design. See the DESeq2 vignette for more details.
+
+We will run the PCA analysis with the DESeq2 command *plotPCA()* and return the data only so we can customise the plot with **ggplot**, a sophisticated plotting package in R. For more on ggplot, refer to our [introduction to R workshop](https://swebb1.github.io/R_Training/index.html).
+
+```{r}
+## Principle component analysis - get the PCA data
+pca<-plotPCA(rld, intgroup=c(labels[1],labels[length(labels)]),returnData=T)
+
+p<-ggplot(pca,aes(PC1,PC2,colour=condition,shape=replicate)) + 
+  geom_point(size=3) +
+  theme_bw() + 
+  theme(legend.key = element_blank()) + 
+  xlab(paste("PC1:",round(attr(pca,"percentVar")[1]*100),"%")) + 
+  ylab(paste("PC1:",round(attr(pca,"percentVar")[2]*100),"%"))
+p
+```
+
+----
+
+### Heatmap of genes with the largest variance
+
+It may also be useful to take an initial look at the genes with the highest amount of variation across the dataset. We should expect to see some genes which appear to be differentially expressed between sample groups.
+
+```{r}
+## Get the top 20 genes after ordering the rld counts by variance
+topVarGenes <- head(order(-rowVars(assay(rld))),20)
+## Create a matrix from these genes only
+mat <- assay(rld)[topVarGenes, ] 
+anno<-as.data.frame(colData(dds)[,labels])
+pheatmap(mat,cluster_rows = F,cluster_cols = F,show_rownames = T,scale="row",annotation_col = anno)
+```
+
+Which gene has the Ensembl identifier ENSG00000155363?
+
+----
+
+### Plot Individual Gene Counts
+
+In certain cases like ours, where we know the expression levels of particular genes should change between sample groups, we may want to plot individual gene counts. Let's plot normalised gene counts for the MOV10 gene (ENSG00000155363).
+
+```{r}
+## Get normalised counts for a single gene
+gene="ENSG00000155363"
+geneData <- plotCounts(dds, gene=gene, intgroup=labels, returnData=TRUE,normalized = T)
+
+## Plot with ggplot
+p<-ggplot(geneData, aes_string(x=labels[1], y="count",fill=labels[length(labels)])) + 
+  scale_y_log10() + 
+  geom_dotplot(binaxis="y", stackdir="center") + 
+  theme_bw() + 
+  theme(legend.key = element_blank()) + 
+  ggtitle(gene) + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+p
+```
+
+## 6. Extract and visualise DESeq2 results
+
+If we are happy with our QC assessment we can retrieve results from the DESeq object and visualise fold changes between specific comparisons.
+
+```{r}
+##Write Report
+#output_html <- paste0(proj,'.html')
+#knit_pattern <- 'Multi_DESeq2.Rmd'
+#render(input = knit_pattern,output_file = output_html)
+
+##Create subdirectories and DE reports for each comparison
+# for(i in 1:length(comp)){
+#   c<-comp[[i]]
+#   dir<-paste0(c[1],".",c[2],"_vs_",c[3],"_padj_",adjp,"_l2fc_",l2fc)
+#   dir.create(dir)
+#   prefix=paste0(dir,"/",c[1],".",c[2],"_vs_",c[3])
+#   ##get result
+#   getRes<-function(c){
+#     res<-results(dds,c,independentFiltering=T)
+#     res<-res[order(res$padj),]
+#     write.table(as.data.frame(res),file=paste0(prefix,".results.deseq2.tab"),sep="\t",quote=F)
+#     res
+#   }
+#   res<-getRes(c)
+#   res.df<-as.data.frame(res)
+#   res.df<-cbind(gene=rownames(res.df),res.df)
+#   res.df$threshold = ifelse(abs(res.df$log2FoldChange) >= l2fc,
+#                             ifelse(res.df$padj <= adjp, 'both', 'l2fc'),ifelse(res.df$padj <= adjp, 'adjp', 'none') )
+#   res.df$threshold<-factor(res.df$threshold,levels = c("none","l2fc","adjp","both"))
+#   
+#   ##get samples names and create mean rld data frame
+#   s1names<-ss[ss[,c[1]]==c[2],][,1]
+#   s2names<-ss[ss[,c[1]]==c[3],][,1]
+#   s1<-rowMeans(assay(rld)[,s1names])
+#   s2<-rowMeans(assay(rld)[,s2names])
+#   rld.mean.df<-data.frame(a=s1,b=s2)
+#   rld.mean.df<-merge(rld.mean.df,res.df,by=0)
+#   rld.mean.df<-rld.mean.df[,c(4,2,3,11)]
+#   colnames(rld.mean.df)[2:3]<-c(c[2],c[3])
+#   
+#   output_html <- paste0(prefix,'.html')
+#   knit_pattern <- 'Subset_DESeq2.Rmd'
+#   render("Subset_DESeq2_salmon.Rmd",output_file = output_html) 
+# }
+```
+

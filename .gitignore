@@ -2,3 +2,6 @@
 .Rhistory
 .RData
 .Ruserdata
+salmon/
+salmon.tar.gz
+*.RDS

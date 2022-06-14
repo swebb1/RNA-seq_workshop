@@ -120,9 +120,9 @@ It is also important to collect **metadata** (information about the data) that d
 | Control_1 | Control, replicate 1 |
 | Control_2 | Control, replicate 2 |
 | Control_3 | Control, replicate 3 |
-| MOV10_OE_1 | MOV10 overexpression, replicate 1 |
-| MOV10_OE_2 | MOV10 overexpression, replicate 2 |
-| MOV10_OE_3 | MOV10 overexpression, replicate 3 |
+| MOV10_OE_1 | MOV10 over-expression, replicate 1 |
+| MOV10_OE_2 | MOV10 over-expression, replicate 2 |
+| MOV10_OE_3 | MOV10 over-expression, replicate 3 |
 
 ----
 
