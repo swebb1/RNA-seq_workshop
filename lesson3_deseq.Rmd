@@ -54,7 +54,7 @@ if (!require("BiocManager", quietly = TRUE))
 
 BiocManager::install("DESeq2")
 BiocManager::install("tximeta")
-BiocManager::install("tximport")
+BiocManager::install("apeglm")
 
 ## Install CRAN packages
 install.packages("tidyverse")
@@ -104,6 +104,8 @@ We will also include a further two samples from the original publication which c
 
 MOV10 is an RNA helicase reported to associate with FMR1, a protein found in the brain and linked to fragile X syndrome. 
 
+!!!Something about replication!!
+
 ### Comprehensive tutorials
 
 This is a *lightweight* introduction to differential expression analysis. For a comprehensive overview of the DESeq2 method, functionality and complex experimental designs, check out the following resources:
@@ -130,9 +132,6 @@ We will start by importing the count data for each sample into R. We will use th
 ```{r}
 library(DESeq2)
 library(tximeta)
-
-disc<-brewer.pal(n = 9,name="Set1")
-cont<-viridis(n=10)
 
 ## tximeta expects a table with at least 2 columns (names and files). We will also add the Group and Replicate.
 coldata<-ss %>% dplyr::select(names=Sample,condition=Group,replicate=Replicate) %>%
@@ -175,10 +174,14 @@ levels(dds$condition)
 ```
 By default, the levels are set in alphabetical order and DESeq2 will always assume that the first level is your control group to which it will compare datasets. In this case we are okay, otherwise you will need to *relevel* your condition column or explicitly reference the condition comparisons of interest in your results (see below).
 
-Let's create a list of comparisons we want to look at. Here we will put our *base-level* or control sample last. We will also set a few other variables to help name our outputs.
+Let's create a list of comparisons, known as contrasts, that we want to look at. Here we will put our *base-level* or control sample last. We will also set a few other variables to help name our outputs.
+
 ```{r}
-comp<-list(c("condition","MOV10_OE","Control"),
+contrasts<-list(c("condition","MOV10_OE","Control"),
            c("condition","MOV10_KD","Control"))
+
+## As well as contrasts, DESeq also uses coefficients to name results. We can create these from our specified contrasts
+coefficients<-contrasts %>% map(~paste(.x[1],.x[2],"vs",.x[3],sep = "_")) %>% unlist()
 
 ## Simple project ID
 project="MOV10"
@@ -191,8 +194,6 @@ cnames <- colData(dds) %>%
   unite(all_of(labels), col = label, sep = "-") %>% 
   pull(label)
   
-  
-  lapply(as.data.frame(colData(dds)[,labels], stringsAsFactors=FALSE),1,paste,collapse="-") 
 ```
 
 Now we are ready to run DESeq. The DESeq function has several internal methods to:
@@ -278,13 +279,14 @@ We will run the PCA analysis with the DESeq2 command *plotPCA()* and return the 
 ## Principle component analysis - get the PCA data
 pca<-plotPCA(rld, intgroup=c(labels[1],labels[length(labels)]),returnData=T)
 
-p<-ggplot(pca,aes(PC1,PC2,colour=condition,shape=replicate)) + 
+## Plot with ggplot
+ggplot(pca,aes(PC1,PC2,colour=condition,shape=replicate)) + 
   geom_point(size=3) +
   theme_bw() + 
   theme(legend.key = element_blank()) + 
   xlab(paste("PC1:",round(attr(pca,"percentVar")[1]*100),"%")) + 
   ylab(paste("PC1:",round(attr(pca,"percentVar")[2]*100),"%"))
-p
+
 ```
 
 ----
@@ -316,59 +318,127 @@ gene="ENSG00000155363"
 geneData <- plotCounts(dds, gene=gene, intgroup=labels, returnData=TRUE,normalized = T)
 
 ## Plot with ggplot
-p<-ggplot(geneData, aes_string(x=labels[1], y="count",fill=labels[length(labels)])) + 
+ggplot(geneData, aes_string(x=labels[1], y="count",fill=labels[length(labels)])) + 
   scale_y_log10() + 
   geom_dotplot(binaxis="y", stackdir="center") + 
   theme_bw() + 
   theme(legend.key = element_blank()) + 
   ggtitle(gene) + 
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
-p
 ```
 
-## 6. Extract and visualise DESeq2 results
+## 6. Extract DESeq2 results
 
 If we are happy with our QC assessment we can retrieve results from the DESeq object and visualise fold changes between specific comparisons.
 
-```{r}
-##Write Report
-#output_html <- paste0(proj,'.html')
-#knit_pattern <- 'Multi_DESeq2.Rmd'
-#render(input = knit_pattern,output_file = output_html)
+DESeq2 has a *results()* function which by default will print the results of the last variable in your formula, comparing the last level of this variable with your base-level. In our case this is the conditions MOV10_OE vs Control.
 
-##Create subdirectories and DE reports for each comparison
-# for(i in 1:length(comp)){
-#   c<-comp[[i]]
-#   dir<-paste0(c[1],".",c[2],"_vs_",c[3],"_padj_",adjp,"_l2fc_",l2fc)
-#   dir.create(dir)
-#   prefix=paste0(dir,"/",c[1],".",c[2],"_vs_",c[3])
-#   ##get result
-#   getRes<-function(c){
-#     res<-results(dds,c,independentFiltering=T)
-#     res<-res[order(res$padj),]
-#     write.table(as.data.frame(res),file=paste0(prefix,".results.deseq2.tab"),sep="\t",quote=F)
-#     res
-#   }
-#   res<-getRes(c)
-#   res.df<-as.data.frame(res)
-#   res.df<-cbind(gene=rownames(res.df),res.df)
-#   res.df$threshold = ifelse(abs(res.df$log2FoldChange) >= l2fc,
-#                             ifelse(res.df$padj <= adjp, 'both', 'l2fc'),ifelse(res.df$padj <= adjp, 'adjp', 'none') )
-#   res.df$threshold<-factor(res.df$threshold,levels = c("none","l2fc","adjp","both"))
-#   
-#   ##get samples names and create mean rld data frame
-#   s1names<-ss[ss[,c[1]]==c[2],][,1]
-#   s2names<-ss[ss[,c[1]]==c[3],][,1]
-#   s1<-rowMeans(assay(rld)[,s1names])
-#   s2<-rowMeans(assay(rld)[,s2names])
-#   rld.mean.df<-data.frame(a=s1,b=s2)
-#   rld.mean.df<-merge(rld.mean.df,res.df,by=0)
-#   rld.mean.df<-rld.mean.df[,c(4,2,3,11)]
-#   colnames(rld.mean.df)[2:3]<-c(c[2],c[3])
-#   
-#   output_html <- paste0(prefix,'.html')
-#   knit_pattern <- 'Subset_DESeq2.Rmd'
-#   render("Subset_DESeq2_salmon.Rmd",output_file = output_html) 
-# }
+```{r}
+results(dds)
+```
+
+However, the *dds* object stores several results. You can see these with the function *resultsNames()*. 
+
+```{r}
+resultsNames(dds)
+```
+
+The Intercept result is a statistical model that compares gene expression to 0 so is not relevant here. We can see that we have results for both of our MOV10 perturbation experiments vs the control.
+
+We can extract a specific result by providing arguments to the *results()* function. Let's look at the first comparison in our list, **MOV10_OE vs Control**.
+
+```{r}
+res<-results(dds,contrast = contrasts[[1]])
+res
+```
+
+The results table includes several columns:
+
+* baseMean = Mean number of counts from all samples
+* log2FoldChange = Log2 of the fold change in normalised counts between sample groups in the contrast
+* lfcSE = Standard error of the log2 fold change
+* stat = The test statistic (Wald test in this case)
+* pvalue = The pvalue / significance level
+* padj = The pvalue adjusted for multiple testing
+
+----
+
+### Multiple testing correction and independent filtering
+
+The two most important columns in our results table are **log2FoldChange**, which is the effect size and tells us how much a gene's expression has changed, and **padj** which gives us the level of statistical significance. DESeq2 reports adjusted p-values (padj) which are corrected for **multiple testing**. We should use these values, **not the pvalue column**, to filter or call significant genes.
+
+DESeq2 uses the Benjamini-Hochberg method to adjust p-values and control the false discovery rate. So, if you were to filter for genes with a padj<=0.05 you would expect 5% of these to be false positives.
+
+If you inspect the result table you may notice that some genes have padj and/or pvalue set to NA. This is because the **results()** function performs filtering of genes to reduce the total number of genes tested and increase the likelihood of finding significant genes after the multiple testing correction. The more genes we test, the larger the multiple testing correction, so it makes sense to remove genes where we are unlikely to see a statistical effect:
+
+* Genes with zero counts in all samples
+* Genes with extreme outliers
+* Genes with extremely low normalised counts
+
+Let's look at a summary of our results. We will also set an **alpha** of 0.05 to tell DESeq which significance threshold to use when summarising results:
+
+```{r}
+summary(res,alpha=0.05)
+```
+
+This is great, we definitely have significant differentially expressed genes!
+
+### Log Fold Change Shrinkage
+
+Let's take a look at these results visually. DESeq2 provides a **plotMA()** function to create MA plots(log2FoldChange vs the mean of normalised counts), a common way to visualise DE genes.  
+
+```{r}
+plotMA(res)
+```
+Significant genes (<=0.05 padj) appear in blue, while non-significant genes are grey. We can immediately see that genes with low counts have much larger variation in log-fold changes. DESeq2 provides the *LFCshrink()* to shrink the fold change estimates and reduce the "noise" from these genes. We can use it instead of the *results()* function and these shrunken fold changes are much better for visualising and ranking our data.
+
+```{r}
+library(apeglm)
+resLFC<-lfcShrink(dds,coef = coefficients[1],type="apeglm")
+summary(resLFC,alpha=0.05)
+```
+
+We can see that the number of significant genes is unaffected. Let's create a new MA plot.
+
+```{r}
+plotMA(resLFC)
+```
+You should see how the shrunken fold changes will be more useful for downstream analysis of the data.
+
+### Create result tables for each of our comparisons
+
+Before moving on, we are going to create result tables for each of the comparisons we are interested in. We will also order these by *padj* so the most significant genes are on top.
+
+```{r}
+## Map each of our coefficients to the lfcShrink function
+result_list<-coefficients %>% map(~lfcShrink(dds,coef = .x,type = "apeglm") %>% 
+                                    as.data.frame() %>% # convert to data frame
+                                    rownames_to_column("geneID") %>% # move rownames to a column called geneID
+                                    arrange(padj) # order by significance
+                                    ) 
+names(result_list) = coefficients
+result_list
+```
+
+We will also save these results tables to text files so we can use them outside of R if required. We will create a folder for each of our results.
+
+```{r}
+## Map each of our coefficients to a function that saves each table in our results_list
+coefficients %>% map(function(x){
+  dir.create(x)
+  write_tsv(result_list[[x]],paste0(x,"/DEseq_result.tsv"),col_names = T,)
+})
+```
+
+----
+
+## 6. Visualise DESeq2 results
+
+We have already seen the MA plot but there are other ways to visualise our results. 
+
+```{r}
+ggplot(resLFC,aes(baseMean,log2FoldChange,)) + 
+  ylim(-3,3) + scale_x_log10() + theme_bw() + ggtitle(paste("MA Plot:",c[1],c[2],"vs",c[3])) +
+  geom_hline(yintercept = 0,colour="black") + theme(legend.key = element_blank())
 ```
 
