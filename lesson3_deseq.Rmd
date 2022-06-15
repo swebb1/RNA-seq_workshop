@@ -47,7 +47,7 @@ You can choose to run RStudio on your own laptop or log into our [RStudio server
 
 DESeq2 is part of the Bioconductor repository of biology specific R packages. You can install DESeq2 using the Bioconductor manager with the code below in the R Console. We will also use several other R libraries.
 
-```{r}
+```{r,eval=F,warning=F,message=F}
 ## Install Bioconductor packages
 if (!require("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
@@ -55,12 +55,13 @@ if (!require("BiocManager", quietly = TRUE))
 BiocManager::install("DESeq2")
 BiocManager::install("tximeta")
 BiocManager::install("apeglm")
+BiocManager::install("clusterProfiler")
+BiocManager::install("org.Hs.eg.db")
 
 ## Install CRAN packages
 install.packages("tidyverse")
 install.packages("RColorBrewer")
-
-
+install.packages("gprofiler2")
 
 ```
 
@@ -82,7 +83,7 @@ DESeq2 requires non-normalised or “raw” count estimates at the gene-level fo
 In the previous lessons we generated tables of transcript abundances (`quant.sf`) for each sample with Salmon, using a reduced set of RNA-seq sequencing reads. As input to DESeq2 we will use similar tables generated from the full dataset.
 
 Download and extract the data folder:
-```{r}
+```{r,eval=F,warning=F,message=F}
 download.file("https://bifx-core3.bio.ed.ac.uk/training/RNA-seq_analysis/salmon.tar.gz","salmon.tar.gz",method="curl",extra=c("--insecure"))
 untar("salmon.tar.gz")
 ```
@@ -436,7 +437,7 @@ We will apply a bit of formatting to our results table and also add some annotat
 result_list2<-result_list %>% 
   map(~as.data.frame(.x) %>% 
         rownames_to_column("geneID") %>% 
-        mutate(threshold=case_when(padj<=padj_thresh & abs(log2FoldChange)>=l2fc_thresh~"Signifcant",T~"Not Significant")) %>% 
+        mutate(threshold=case_when(padj<=padj_thresh & abs(log2FoldChange)>=l2fc_thresh~"Significant",T~"Not Significant")) %>% 
         arrange(padj) %>% 
         as_tibble()
   )
@@ -452,20 +453,25 @@ query(ah,c("EnsDb","106","Homo")) ##Search annotationHub for Ensembl 106 annotat
 edb<-ah[["AH100643"]] ##Use the Annotation hub ID for the ensembldb object
 
 ## Extract a table of gene annotations 
-anno<-genes(edb) %>% 
-  mcols() %>% 
-  as_tibble() %>% 
-  dplyr::select(gene_id,gene_name,gene_biotype)
+genes<-genes(edb,return.type = "data.frame") %>% 
+  dplyr::select(gene_id,gene_name,gene_biotype,entrezid) %>% 
+  as_tibble()
 
-anno
+genes
 ```
 
+This looks good but there is something weird about the *entrezid* column. It actually contains lists of multiple IDs for some Ensembl identifiers. The entrez IDs and Ensembl IDs do not always have a 1-to-1 relationship. To resolve this we will just select the first in each list.
+
+```{r}
+genes$entrezid <- map(genes$entrezid,1) %>% unlist()
+genes
+```
 Now we can merge our result tables with the annotations to add extra columns:
 
 ```{r}
 ## Map all result lists to a function that joins with the anno data
 result_list_anno<-result_list2 %>% 
-  map(~left_join(x=.x,y=anno,by=c("geneID"="gene_id")) %>% 
+  map(~left_join(x=.x,y=genes,by=c("geneID"="gene_id")) %>% 
         mutate(gene_biotype=as.factor(gene_biotype))) ## biotype as a factor
 ```
 
@@ -510,9 +516,104 @@ ggplot(result_list_anno[[1]],aes(log2FoldChange,-log10(padj),colour=threshold)) 
   theme(legend.key = element_blank())
 ```
 
+----
 
-### Heatmap of genes with largest changes
+### Plots of DE genes by biotype
 
-First, let's subset our results to get lists of significant genes
+If we are interested in more than just protein coding genes, we could take a look at the types of RNAs which are represented in our DE genes.
+
+First, let's filter our results for genes which pass our threshold for differential expression.
+
+```{r}
+sig_genes<-result_list_anno[[1]] %>% dplyr::filter(threshold=="Significant")
+
+ggplot(sig_genes,aes("Significant genes",fill=gene_biotype)) +
+  geom_bar() + 
+  theme_bw() + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+
+```
+
+----
+
+### Heatmaps of genes with largest changes
+
+Now that we have our results, we can use the log normalised counts we created earlier to plot heatmaps of genes with the largest changes.
+
+```{r}
+top50<-result_list_anno[[1]] %>% 
+  dplyr::filter(threshold=="Significant") %>% 
+  arrange(abs(log2FoldChange)) %>% 
+  head(n=50) %>% 
+  pull(geneID)
+
+mat<-assay(rld)[top50,]
+colors <- colorRampPalette( rev(brewer.pal(9, "RdBu")) )(255)
+pheatmap(mat,color=colors,scale = "row",cluster_rows = T,cluster_cols = T,annotation_col = anno)
+```
+
+## Functional enrichment of genes
+
+We can perform enrichment analyses to see if there are any functional annotations common to our DE genes that may imply something about the function of MOV10.
+
+In these examples we will use all of our significant genes. However, in some cases it may be more appropriate to look at genes that are differentially expressed in one direction.
+
+The **clusterProfiler** package has functions for enrichment analysis and plotting gene annotations. To perform the enrichment analysis, we need a list of background genes and a list of significant genes. For our background dataset we will use all genes tested for differential expression (all genes in our results table).
+
+The *enrichGO* function looks for gene ontology terms that are over-represented in the list of significant genes. We will look at the *Biological Process (BP)* terms only.
+
+```{r}
+library(clusterProfiler)
+library(org.Hs.eg.db)
+##Run the GO enrichment 
+ego <- enrichGO(gene          = sig_genes$geneID,
+                universe      = result_list_anno[[1]]$geneID,
+                OrgDb         = org.Hs.eg.db,
+                keyType       = "ENSEMBL",
+                ont           = "BP",
+                pAdjustMethod = "BH",
+                qvalueCutoff  = 0.05,
+                readable      = TRUE)
+head(ego)
+```
+
+```{r}
+##Plot the top enriched terms
+dotplot(ego, showCategory=10)
+```
+
+<div class="resources">
+<h2><i class="fas fa-book"></i> Further Learning</h2>
+**clusterProfiler** also provides methods to query pathway databases such as KEGG. You can find out more in the [documentation](https://bioconductor.org/packages/release/bioc/vignettes/clusterProfiler/inst/doc/clusterProfiler.html).
+</div>
+<br>
+
+The package **gprofiler2** is a wrapper for the online tool g:Profiler and looks at many different databases at once including GO, KEGG and transcription factor motifs. g:Profiler performs functional enrichment analysis of gene lists and will understand and convert Ensembl identifiers directly.
+
+```{r}
+library(gprofiler2)
+##Get a table of enriched terms with the gost function - this accepts Ensembl gene IDs
+gp<-gost(query = sig_genes$geneID,organism = "hsapiens", ordered_query = FALSE,multi_query = FALSE, significant = TRUE, exclude_iea = TRUE, user_threshold = 0.05, correction_method = "g_SCS", domain_scope = "annotated", custom_bg = result_list_anno[[1]]$geneID)
+
+##Inspect the output, the "term_name" column is the enriched term and the "source" tells us which database it belongs to. 
+gp$result
+```
+
+There is an interactive plot function built into **gprofiler2** to visualise enriched terms.
+
+```{r}
+## Plot gprofiler output
+gostplot(gp, capped = TRUE, interactive = TRUE)
+```
+
+<div class="challenge">
+<h2><i class="fas fa-pencil-alt"></i> Challenge:</h2>
+See if you can produce similar visual outputs for the MOV10_KD_vs_Control comparison.
+</div>
+<br>
+
+
+
+
 
 
