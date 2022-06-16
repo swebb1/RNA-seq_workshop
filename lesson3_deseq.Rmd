@@ -197,7 +197,7 @@ cnames <- colData(dds) %>%
 
 ## Thresholds for p-value and fold change to filter and summarise results later
 padj_thresh = 0.05
-l2fc_thresh = 0.5
+l2fc_thresh = 0.3
   
 ```
 
@@ -593,7 +593,7 @@ The package **gprofiler2** is a wrapper for the online tool g:Profiler and looks
 ```{r}
 library(gprofiler2)
 ##Get a table of enriched terms with the gost function - this accepts Ensembl gene IDs
-gp<-gost(query = sig_genes$geneID,organism = "hsapiens", ordered_query = FALSE,multi_query = FALSE, significant = TRUE, exclude_iea = TRUE, user_threshold = 0.05, correction_method = "g_SCS", domain_scope = "annotated", custom_bg = result_list_anno[[1]]$geneID)
+gp<-gost(query = sig_genes$geneID,organism = "hsapiens", ordered_query = FALSE,multi_query = FALSE, significant = TRUE, exclude_iea = TRUE, user_threshold = 0.05, correction_method = "g_SCS", domain_scope = "annotated")
 
 ##Inspect the output, the "term_name" column is the enriched term and the "source" tells us which database it belongs to. 
 gp$result

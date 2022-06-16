@@ -257,7 +257,7 @@ ps f
 ```
 
 * *ls* lists files ending with .fq.gz in your fastq directory and pipes the names into the parallel command.
-* The parallel *-j* flag stands for *juggle* and tells parallel to run 5 processes at the same time. 
+* The parallel *-j* flag stands for *jobs* and tells parallel to run 5 processes at the same time. 
 * In this case we are running fastqc and the *{}* is a place holder for the filenames we are piping in.
 * The *&* character runs these jobs in the background so we can continue to use the terminal.
 * *ps* is the *process status* tool which shows jobs running in the current session, we should see 5 instances of fastqc running.
