@@ -45,7 +45,7 @@ This workshop is designed as an introduction to RNA-seq data analysis and will g
 
 ### Differential expression analysis with DESeq2
 
-* Load transcript expression files into R
+* Load transcript abundance files into R
 * Run DESeq2 and visualise results
 * Extract differentially expressed genes
 * Perform functional enrichment on sets of genes

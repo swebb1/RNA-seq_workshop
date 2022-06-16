@@ -43,6 +43,8 @@ We recommend that you understand the basics of R and RStudio and follow at least
 
 You can choose to run RStudio on your own laptop or log into our [RStudio server](https://bifx-rstudio.bio.ed.ac.uk) on the bioinformatics servers.
 
+----
+
 ### Installing DESeq2
 
 DESeq2 is part of the Bioconductor repository of biology specific R packages. You can install DESeq2 using the Bioconductor manager with the code below in the R Console. We will also use several other R libraries.
@@ -65,9 +67,13 @@ install.packages("gprofiler2")
 
 ```
 
+----
+
 ### Create a project
 
 Use the project drop-down menu at the top right to create a new project called *Differential expression workshop* or something similar and choose an appropriate working directory.
+
+----
 
 ### Input data
 
@@ -88,6 +94,8 @@ download.file("https://bifx-core3.bio.ed.ac.uk/training/RNA-seq_analysis/salmon.
 untar("salmon.tar.gz")
 ```
 
+----
+
 ### Experimental design
 
 We will also include a further two samples from the original publication which correspond to a **MOV10 knock-down** cell line using siRNA. We will use this data to investigate changes in transcription upon perturbation of MOV10 expression relative to the control (irrelevant siRNA) experiment.
@@ -107,6 +115,8 @@ MOV10 is an RNA helicase reported to associate with FMR1, a protein found in the
 
 !!!Something about replication!!
 
+----
+
 ### Comprehensive tutorials
 
 This is a *lightweight* introduction to differential expression analysis. For a comprehensive overview of the DESeq2 method, functionality and complex experimental designs, check out the following resources:
@@ -114,6 +124,8 @@ This is a *lightweight* introduction to differential expression analysis. For a 
 * [DESeq2 tutorial](http://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html)
 * [RNAseq analysis with DESeq2](http://master.bioconductor.org/packages/release/workflows/vignettes/rnaseqGene/inst/doc/rnaseqGene.html)
 * [HBC Differential expression workshop](https://hbctraining.github.io/DGE_workshop_salmon_online/schedule/links-to-lessons.html)
+
+----
 
 ## 2. Create a sample file
 
@@ -124,6 +136,8 @@ library(tidyverse)
 ss<-read_tsv("salmon/samples.tsv",col_names = T,col_types = "fff")
 ss
 ```
+
+----
 
 ## 3. Importing count data with tximeta
 
@@ -197,7 +211,7 @@ cnames <- colData(dds) %>%
 
 ## Thresholds for p-value and fold change to filter and summarise results later
 padj_thresh = 0.05
-l2fc_thresh = 0.3
+l2fc_thresh = 0 ## Just include all significant genes here
   
 ```
 
@@ -220,6 +234,8 @@ dds <- DESeq(dds)
 saveRDS(dds,file =paste0(project,".dds.RDS"))
 ```
 
+----
+
 ### Plot dispersions
 
 It can be useful to plot the gene-level dispersion estimates to ensure the DESeq model is right for your data. You should find that dispersion is generally lower for genes with higher read counts, that final dispersion levels have been shrunk towards the fitted model and that a few outliers exist which have not been shrunk. If the red line is not a good generalisation for your data then DE analysis with DESeq2 may not be appropriate.
@@ -240,7 +256,7 @@ Before we look at the results of differential expression tests we first want to 
 !!! More info on rld and vst
 
 ```{r}
-##Log transformed data
+## Log transformed data
 rld <- rlog(dds, blind=F)
 saveRDS(rld,file =paste0(project,".rld.RDS"))
 ```
@@ -332,6 +348,8 @@ ggplot(geneData, aes_string(x=labels[1], y="count",fill=labels[length(labels)]))
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
 
+----
+
 ## 6. Extract DESeq2 results
 
 If we are happy with our QC assessment we can retrieve results from the DESeq object and visualise fold changes between specific comparisons.
@@ -388,6 +406,8 @@ summary(res,alpha=padj_thresh)
 
 This is great, we definitely have significant differentially expressed genes!
 
+----
+
 ### Log Fold Change Shrinkage
 
 Let's take a look at these results visually. DESeq2 provides a **plotMA()** function to create MA plots(log2FoldChange vs the mean of normalised counts), a common way to visualise DE genes.  
@@ -409,6 +429,8 @@ We can see that the number of significant genes is unaffected. Let's create a ne
 plotMA(resLFC)
 ```
 You should see how the shrunken fold changes will be more useful for downstream analysis of the data.
+
+----
 
 ### Create result tables for each of our comparisons
 
@@ -444,13 +466,20 @@ result_list2<-result_list %>%
 result_list2
 ```
 
-Our result table contains Ensembl gene identifiers but we may want to add more annotations like the gene name and biotype. We can fetch Ensembl annotations from the R package **AnnotationHub**.
+Our result table contains Ensembl gene identifiers but we may want to add more annotations like the gene name and biotype. We can fetch Ensembl annotations from the R package **AnnotationHub**. Let's search for the right database first.
 
 ```{r}
 library(AnnotationHub)
 ah<-AnnotationHub() ## create a link to the annotation hub
 query(ah,c("EnsDb","106","Homo")) ##Search annotationHub for Ensembl 106 annotation database
-edb<-ah[["AH100643"]] ##Use the Annotation hub ID for the ensembldb object
+```
+
+You should find the annotation hub ID for the Ensembl v106 humand ensdb object (AH100643). We actually downloaded this earlier with **tximeta**.
+
+We can then extract gene-level annotations:
+
+```{r}
+edb<-ah[["AH100643"]] ##Load the the ensembldb object
 
 ## Extract a table of gene annotations 
 genes<-genes(edb,return.type = "data.frame") %>% 
@@ -478,7 +507,7 @@ result_list_anno<-result_list2 %>%
 We will now save these results tables to text files so we can use them outside of R if required. We can create a folder for each of our results.
 
 ```{r}
-## Map each of our coefficients to a function that saves each table in our results_list
+## Map each of our result names to a function that saves each table in our results_list
 names(result_list_anno) %>% map(function(x){
   dir.create(x)
   write_tsv(result_list_anno[[x]],paste0(x,"/DEseq_result.tsv"),col_names = T,)
@@ -487,7 +516,7 @@ names(result_list_anno) %>% map(function(x){
 
 ----
 
-## 6. Visualise DESeq2 results
+## 7. Visualise DESeq2 results
 
 We have already seen the MA plot but there are other ways to visualise our results. 
 
@@ -552,7 +581,9 @@ colors <- colorRampPalette( rev(brewer.pal(9, "RdBu")) )(255)
 pheatmap(mat,color=colors,scale = "row",cluster_rows = T,cluster_cols = T,annotation_col = anno)
 ```
 
-## Functional enrichment of genes
+----
+
+## 8. Functional enrichment of genes
 
 We can perform enrichment analyses to see if there are any functional annotations common to our DE genes that may imply something about the function of MOV10.
 
@@ -565,7 +596,7 @@ The *enrichGO* function looks for gene ontology terms that are over-represented 
 ```{r}
 library(clusterProfiler)
 library(org.Hs.eg.db)
-##Run the GO enrichment 
+## Run the GO enrichment 
 ego <- enrichGO(gene          = sig_genes$geneID,
                 universe      = result_list_anno[[1]]$geneID,
                 OrgDb         = org.Hs.eg.db,
@@ -578,8 +609,8 @@ head(ego)
 ```
 
 ```{r}
-##Plot the top enriched terms
-dotplot(ego, showCategory=10)
+## Plot the top enriched terms
+dotplot(ego, showCategory=20)
 ```
 
 <div class="resources">
@@ -592,19 +623,13 @@ The package **gprofiler2** is a wrapper for the online tool g:Profiler and looks
 
 ```{r}
 library(gprofiler2)
-##Get a table of enriched terms with the gost function - this accepts Ensembl gene IDs
+## Get a table of enriched terms with the gost function - this accepts Ensembl gene IDs
 gp<-gost(query = sig_genes$geneID,organism = "hsapiens", ordered_query = FALSE,multi_query = FALSE, significant = TRUE, exclude_iea = TRUE, user_threshold = 0.05, correction_method = "g_SCS", domain_scope = "annotated")
 
-##Inspect the output, the "term_name" column is the enriched term and the "source" tells us which database it belongs to. 
+## Inspect the output, the "term_name" column is the enriched term and the "source" tells us which database it belongs to. 
 gp$result
 ```
 
-There is an interactive plot function built into **gprofiler2** to visualise enriched terms.
-
-```{r}
-## Plot gprofiler output
-gostplot(gp, capped = TRUE, interactive = TRUE)
-```
 
 <div class="challenge">
 <h2><i class="fas fa-pencil-alt"></i> Challenge:</h2>
