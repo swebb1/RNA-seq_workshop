@@ -5,7 +5,7 @@ navbar:
     - text: "Command line analysis"
       href: lesson1_command_line.html
     - text: "Differential expression"
-      href: lesson3_deseq2.html
+      href: lesson3_deseq.html
 output_dir: "."
 output:
   html_document:

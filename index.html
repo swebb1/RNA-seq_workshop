@@ -14,7 +14,7 @@
 
 <title>WCB RNA-Seq Workshop</title>
 
-<script src="site_libs/header-attrs-2.11/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.14/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/yeti.min.css" rel="stylesheet" />
@@ -60,6 +60,7 @@ if (window.hljs) {
 
 
 
+
 <link rel="stylesheet" href="style.css" type="text/css" />
 
 
@@ -84,6 +85,9 @@ button.code-folding-btn:focus {
 }
 summary {
   display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
 }
 pre code {
   padding: 0;
@@ -236,7 +240,7 @@ $(document).ready(function () {
 <div class="navbar navbar-default  navbar-fixed-top" role="navigation">
   <div class="container">
     <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
@@ -246,7 +250,10 @@ $(document).ready(function () {
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="1.command_line.html">Command line analysis</a>
+  <a href="lesson1_command_line.html">Command line analysis</a>
+</li>
+<li>
+  <a href="lesson3_deseq2.html">Differential expression</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -273,7 +280,8 @@ $(document).ready(function () {
 <p><br></p>
 <p><img src="images/CELL_BIOLOGY_RGB.png" style="width:50.0%" /></p>
 <p><br></p>
-<p>This workshop is designed as an introduction to RNA-seq data analysis and will guide you through the following steps:</p>
+<p>This workshop is designed as an introduction to RNA-seq data analysis
+and will guide you through the following steps:</p>
 <div id="rna-seq-analysis-on-the-command-line" class="section level3">
 <h3>RNA-seq analysis on the command line</h3>
 <ul>
@@ -293,18 +301,29 @@ $(document).ready(function () {
 <li>Run the pipeline with NextFlow</li>
 </ul>
 </div>
-<div id="differential-expression-analysis-with-deseq2" class="section level3">
+<div id="differential-expression-analysis-with-deseq2"
+class="section level3">
 <h3>Differential expression analysis with DESeq2</h3>
 <ul>
-<li>Load transcript expression files into R</li>
+<li>Load transcript abundance files into R</li>
 <li>Run DESeq2 and visualise results</li>
 <li>Extract differentially expressed genes</li>
 <li>Perform functional enrichment on sets of genes</li>
 </ul>
-<p>There is no such thing as a default pipeline. Although we mostly use standard parameters in this tutorial we hope to make you aware of the considerations you should take at each step. Make sure you understand your data and where it has come from. Use the correct tools for your dataset and read the tool documentation to see how different parameters affect your output!</p>
-<p>This workshop is partly modeled on the training materials already provided by the <a href="https://hbctraining.github.io/main/">Harvard Chan Bioinformatics Core</a>. Please check out their website for comprehensive training materials in RNA-seq, NGS analysis and bioinformatics.</p>
+<p>There is no such thing as a default pipeline. Although we mostly use
+standard parameters in this tutorial we hope to make you aware of the
+considerations you should take at each step. Make sure you understand
+your data and where it has come from. Use the correct tools for your
+dataset and read the tool documentation to see how different parameters
+affect your output!</p>
+<p>This workshop is partly modeled on the training materials already
+provided by the <a href="https://hbctraining.github.io/main/">Harvard
+Chan Bioinformatics Core</a>. Please check out their website for
+comprehensive training materials in RNA-seq, NGS analysis and
+bioinformatics.</p>
 <hr />
-<p>For more information contact <a href="mailto:shaun.webb@ed.ac.uk">Shaun Webb</a>.</p>
+<p>For more information contact <a
+href="mailto:shaun.webb@ed.ac.uk">Shaun Webb</a>.</p>
 </div>
 
 

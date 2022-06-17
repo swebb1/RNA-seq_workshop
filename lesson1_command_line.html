@@ -13,7 +13,7 @@
 
 <title>RNA-seq command line analysis</title>
 
-<script src="site_libs/header-attrs-2.11/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.14/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/yeti.min.css" rel="stylesheet" />
@@ -59,6 +59,7 @@ if (window.hljs) {
 
 
 
+
 <link rel="stylesheet" href="style.css" type="text/css" />
 
 
@@ -83,6 +84,9 @@ button.code-folding-btn:focus {
 }
 summary {
   display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
 }
 pre code {
   padding: 0;
@@ -235,7 +239,7 @@ $(document).ready(function () {
 <div class="navbar navbar-default  navbar-fixed-top" role="navigation">
   <div class="container">
     <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
@@ -245,7 +249,10 @@ $(document).ready(function () {
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="1.command_line.html">Command line analysis</a>
+  <a href="lesson1_command_line.html">Command line analysis</a>
+</li>
+<li>
+  <a href="lesson3_deseq2.html">Differential expression</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -266,14 +273,20 @@ $(document).ready(function () {
 <div id="TOC">
 <ul>
 <li><a href="#getting-started">1. Getting Started</a></li>
-<li><a href="#rna-seq-sequencing-data">2. RNA-seq sequencing data</a></li>
+<li><a href="#rna-seq-sequencing-data">2. RNA-seq sequencing
+data</a></li>
 <li><a href="#quality-control">3. Quality control</a></li>
-<li><a href="#shell-scripts-pipelining-and-parallelisation">4. Shell scripts, pipelining and parallelisation</a></li>
-<li><a href="#quality-trimming-and-adapter-removal">5. Quality trimming and adapter removal</a></li>
+<li><a href="#shell-scripts-pipelining-and-parallelisation">4. Shell
+scripts, pipelining and parallelisation</a></li>
+<li><a href="#quality-trimming-and-adapter-removal">5. Quality trimming
+and adapter removal</a></li>
 <li><a href="#read-alignment">6. Read Alignment</a></li>
-<li><a href="#post-alignment-processing">7. Post alignment processing</a></li>
-<li><a href="#visualising-alignments-on-a-genome-browser">8. Visualising alignments on a genome browser</a></li>
-<li><a href="#quantifying-expression-levels">9. Quantifying expression levels</a></li>
+<li><a href="#post-alignment-processing">7. Post alignment
+processing</a></li>
+<li><a href="#visualising-alignments-on-a-genome-browser">8. Visualising
+alignments on a genome browser</a></li>
+<li><a href="#quantifying-expression-levels">9. Quantifying expression
+levels</a></li>
 <li><a href="#finish-your-script">10. Finish your script</a></li>
 </ul>
 </div>
@@ -289,7 +302,8 @@ $(document).ready(function () {
 <ul>
 <li>Set up a project folder on the bioinformatics servers</li>
 <li>Perform quality control on RNA-sequencing reads</li>
-<li>Align reads to a reference genome and perform post alignment filtering</li>
+<li>Align reads to a reference genome and perform post alignment
+filtering</li>
 <li>View read coverage profiles and alignments in a genome browser</li>
 <li>Quantify transcript expression</li>
 </ul>
@@ -298,34 +312,62 @@ $(document).ready(function () {
 <hr />
 <div id="getting-started" class="section level2">
 <h2>1. Getting Started</h2>
-<p>We are using the Linux command line to run most of the tools we use today. If you are new to Linux please complete the Intro to Command Line <a href="http://bifx-core.bio.ed.ac.uk/hyweldd/training/Bioinformatics_on_the_Command_Line/">Workshop</a>.</p>
-<p>For a quick refresh of linux commands take a look <a href="https://files.fosswire.com/2007/08/fwunixref.pdf">here</a>.</p>
+<p>We are using the Linux command line to run most of the tools we use
+today. If you are new to Linux please complete the Intro to Command Line
+<a
+href="http://bifx-core.bio.ed.ac.uk/hyweldd/training/Bioinformatics_on_the_Command_Line/">Workshop</a>.</p>
+<p>For a quick refresh of linux commands take a look <a
+href="https://files.fosswire.com/2007/08/fwunixref.pdf">here</a>.</p>
 <div id="logging-in" class="section level3">
 <h3>Logging in</h3>
-<p>We will use the WCB bioinformatics servers for this practical. If you do not have an account please contact a member of the core facility to get this set up. You will need access to the university network or VPN to access the server.</p>
-<p>You will need to use a <strong>Terminal</strong> app on Mac, Linux or Windows or an alternative app such as <a href="https://mobaxterm.mobatek.net/">MobaXTerm</a>. You can also log in via <a href="https://wiki.x2go.org/doku.php/doc:installation:start">X2Go</a> if you would like to use a graphical interface.</p>
+<p>We will use the WCB bioinformatics servers for this practical. If you
+do not have an account please contact a member of the core facility to
+get this set up. You will need access to the university network or VPN
+to access the server.</p>
+<p>You will need to use a <strong>Terminal</strong> app on Mac, Linux or
+Windows or an alternative app such as <a
+href="https://mobaxterm.mobatek.net/">MobaXTerm</a>. You can also log in
+via <a
+href="https://wiki.x2go.org/doku.php/doc:installation:start">X2Go</a> if
+you would like to use a graphical interface.</p>
 <p>To login via a command line application:</p>
 <pre class="bash"><code>ssh USER@bifx-core2.bio.ed.ac.uk</code></pre>
-<p>Once you have typed in your password, you should see some text and a prompt that looks something like this:</p>
+<p>Once you have typed in your password, you should see some text and a
+prompt that looks something like this:</p>
 <pre class="bash"><code>[USERNAME]@bifx-core3:~$</code></pre>
 <hr />
 </div>
 <div id="creating-a-web-directory" class="section level3">
 <h3>Creating A Web Directory</h3>
-<p>In order to view files created on the server, we need to create a <em>public_html</em> directory in our home folder.</p>
-<p>After logging in you should be in your $HOME directory, check with;</p>
+<p>In order to view files created on the server, we need to create a
+<em>public_html</em> directory in our home folder.</p>
+<p>After logging in you should be in your $HOME directory, check
+with;</p>
 <pre class="bash"><code>pwd</code></pre>
-<p>This shows the <strong>path</strong> of your present working directory, which should now be your home directory as you have just logged in. You can return to this place at any time using the change directory command.</p>
+<p>This shows the <strong>path</strong> of your present working
+directory, which should now be your home directory as you have just
+logged in. You can return to this place at any time using the change
+directory command.</p>
 <pre class="bash"><code>cd</code></pre>
-<p>You have permission to create files and directories under your home folder. Let’s create the <code>public_html</code> directory to use later on.</p>
+<p>You have permission to create files and directories under your home
+folder. Let’s create the <code>public_html</code> directory to use later
+on.</p>
 <pre class="bash"><code>mkdir ~/public_html</code></pre>
-<p>Here we have used ~/ as a shortcut for your $HOME directory. As you have created <code>~/public_html</code>, contents of this directory are now available online with any web browser</p>
-<p>To see it, enter the following URL, changing <em>yourUserName</em> to whatever your username is: <a href="https://bifx-core3.bio.ed.ac.uk/~yourUserName" class="uri">https://bifx-core3.bio.ed.ac.uk/~yourUserName</a></p>
+<p>Here we have used ~/ as a shortcut for your $HOME directory. As you
+have created <code>~/public_html</code>, contents of this directory are
+now available online with any web browser</p>
+<p>To see it, enter the following URL, changing <em>yourUserName</em> to
+whatever your username is: <a
+href="https://bifx-core3.bio.ed.ac.uk/~yourUserName"
+class="uri">https://bifx-core3.bio.ed.ac.uk/~yourUserName</a></p>
 <hr />
 </div>
 <div id="integrative-genomics-viewer" class="section level3">
 <h3>Integrative Genomics Viewer</h3>
-<p>Please install <a href="https://software.broadinstitute.org/software/igv/download">IGV</a> on your own machine, alternatively you can use the <a href="https://igv.org/app/">web application</a>.</p>
+<p>Please install <a
+href="https://software.broadinstitute.org/software/igv/download">IGV</a>
+on your own machine, alternatively you can use the <a
+href="https://igv.org/app/">web application</a>.</p>
 <br>
 <div class="key-points">
 <h2>
@@ -346,22 +388,45 @@ $(document).ready(function () {
 </div>
 <div id="rna-seq-sequencing-data" class="section level2">
 <h2>2. RNA-seq sequencing data</h2>
-<p>The data we will we use in this workshop is part of a larger study described in <a href="https://pubmed.ncbi.nlm.nih.gov/25464849/">Kenny PJ et al., Cell Rep 2014</a>. The authors investigated interactions between various genes involved in Fragile X syndrome, a disease of aberrant protein production, which results in cognitive impairment and autistic-like features. They sought to show that RNA helicase <strong>MOV10</strong> regulates the translation of RNAs involved in Fragile X syndrome.</p>
-<p>The RNA was extracted from HEK293F cells that were transfected with a MOV10 transgene (MOV10 over-expression), MOV10 siRNA (MOV10 knockdown), or an irrelevant siRNA (Control). For now, we will just look at the over-expression and control samples.</p>
+<p>The data we will we use in this workshop is part of a larger study
+described in <a href="https://pubmed.ncbi.nlm.nih.gov/25464849/">Kenny
+PJ et al., Cell Rep 2014</a>. The authors investigated interactions
+between various genes involved in Fragile X syndrome, a disease of
+aberrant protein production, which results in cognitive impairment and
+autistic-like features. They sought to show that RNA helicase
+<strong>MOV10</strong> regulates the translation of RNAs involved in
+Fragile X syndrome.</p>
+<p>The RNA was extracted from HEK293F cells that were transfected with a
+MOV10 transgene (MOV10 over-expression), MOV10 siRNA (MOV10 knockdown),
+or an irrelevant siRNA (Control). For now, we will just look at the
+over-expression and control samples.</p>
 <div id="raw-data" class="section level3">
 <h3>Raw Data</h3>
-<p>The raw RNA-seq data is available publicly via <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE50499">GEO</a> and the <a href="https://www.ncbi.nlm.nih.gov/sra?term=SRP029367">SRA</a> (sequence read archive).</p>
+<p>The raw RNA-seq data is available publicly via <a
+href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE50499">GEO</a>
+and the <a
+href="https://www.ncbi.nlm.nih.gov/sra?term=SRP029367">SRA</a> (sequence
+read archive).</p>
 </div>
 <div id="metadata" class="section level3">
 <h3>Metadata</h3>
-<p>It is also important to collect <strong>metadata</strong> (information about the data) that describes the samples and the experimental preparation. Some key things to note about these datasets:</p>
+<p>It is also important to collect <strong>metadata</strong>
+(information about the data) that describes the samples and the
+experimental preparation. Some key things to note about these
+datasets:</p>
 <ul>
-<li>HEK293F is a <strong>human</strong> cell line so we will align our reads to a human reference.</li>
-<li>The libraries are <strong>stranded</strong> so we expect reads to align to genes in a strand specific manner.</li>
-<li>The libraries were created with the <strong>Illumina Tru-seq adapters</strong>.</li>
+<li>HEK293F is a <strong>human</strong> cell line so we will align our
+reads to a human reference.</li>
+<li>The libraries are <strong>stranded</strong> so we expect reads to
+align to genes in a strand specific manner.</li>
+<li>The libraries were created with the <strong>Illumina Tru-seq
+adapters</strong>.</li>
 <li><strong>100bp single-end reads</strong> were generated.</li>
-<li>They contain ~40 million reads per sample. For the purpose of this workshop we have randomly sub-sampled <strong>200000</strong> reads to speed up computation.</li>
-<li>For each group we have <strong>three replicates</strong> as described below.</li>
+<li>They contain ~40 million reads per sample. For the purpose of this
+workshop we have randomly sub-sampled <strong>200000</strong> reads to
+speed up computation.</li>
+<li>For each group we have <strong>three replicates</strong> as
+described below.</li>
 </ul>
 <table>
 <thead>
@@ -385,15 +450,15 @@ $(document).ready(function () {
 </tr>
 <tr class="even">
 <td>MOV10_OE_1</td>
-<td>MOV10 overexpression, replicate 1</td>
+<td>MOV10 over-expression, replicate 1</td>
 </tr>
 <tr class="odd">
 <td>MOV10_OE_2</td>
-<td>MOV10 overexpression, replicate 2</td>
+<td>MOV10 over-expression, replicate 2</td>
 </tr>
 <tr class="even">
 <td>MOV10_OE_3</td>
-<td>MOV10 overexpression, replicate 3</td>
+<td>MOV10 over-expression, replicate 3</td>
 </tr>
 </tbody>
 </table>
@@ -401,29 +466,41 @@ $(document).ready(function () {
 </div>
 <div id="obtaining-data" class="section level3">
 <h3>Obtaining data</h3>
-<p>First, make a new directory for this tutorial and move into that directory. Then link the directory to your <code>public_html</code> folder as we are going to make everything public in this tutorial.</p>
+<p>First, make a new directory for this tutorial and move into that
+directory. Then link the directory to your <code>public_html</code>
+folder as we are going to make everything public in this tutorial.</p>
 <pre class="bash"><code>cd 
 mkdir RNA-seq_workshop
 cd RNA-seq_workshop
 ln -s $PWD ~/public_html/</code></pre>
-<p>Next, create a subfolder called <strong>fastq</strong> for all of our sequence files and link the raw datasets to this folder:</p>
+<p>Next, create a subfolder called <strong>fastq</strong> for all of our
+sequence files and link the raw datasets to this folder:</p>
 <pre class="bash"><code>mkdir fastq
 ln -s /library/training/RNA-seq_workshop/data/lesson_1/fastq/*fq.gz fastq/</code></pre>
-<p>As well as the raw data we will also need access to annotations and reference sequences for the human genome/transcriptome. These are provided for this workshop and should also be linked to your folder:</p>
+<p>As well as the raw data we will also need access to annotations and
+reference sequences for the human genome/transcriptome. These are
+provided for this workshop and should also be linked to your folder:</p>
 <pre class="bash"><code>ln -s /library/training/RNA-seq_workshop/annotation .</code></pre>
 <hr />
 </div>
 <div id="fastq-files" class="section level3">
 <h3>FastQ files</h3>
-<p>Sequencing data will typically be provided to you in <strong>fastq</strong> format (.fq or .fastq) or as a compressed gzipped fastq (.fq.gz) in order to save space. We can view a gzipped file with the zless command, let’s take a look:</p>
+<p>Sequencing data will typically be provided to you in
+<strong>fastq</strong> format (.fq or .fastq) or as a compressed gzipped
+fastq (.fq.gz) in order to save space. We can view a gzipped file with
+the zless command, let’s take a look:</p>
 <pre class="bash"><code>cd fastq # Move into the fastq directory (if you haven&#39;t already)
 zless Control_1.fq.gz | head -n 12</code></pre>
-<p><a href="https://en.wikipedia.org/wiki/FASTQ_format">Fastq</a> files contain 4 lines per sequenced read:</p>
+<p><a href="https://en.wikipedia.org/wiki/FASTQ_format">Fastq</a> files
+contain 4 lines per sequenced read:</p>
 <ul>
-<li>Line 1 begins with an ‘@’ character and is followed by a sequence identifier and an optional description</li>
+<li>Line 1 begins with an ‘@’ character and is followed by a sequence
+identifier and an optional description</li>
 <li>Line 2 is the raw sequence</li>
-<li>Line 3 begins with a ‘+’ character and is optionally followed by the same sequence identifier</li>
-<li>Line 4 encodes the Phred quality score for the sequence in Line 2 as ASCII characters</li>
+<li>Line 3 begins with a ‘+’ character and is optionally followed by the
+same sequence identifier</li>
+<li>Line 4 encodes the Phred quality score for the sequence in Line 2 as
+ASCII characters</li>
 </ul>
 <br>
 <div class="key-points">
@@ -446,34 +523,72 @@ zless Control_1.fq.gz | head -n 12</code></pre>
 </div>
 <div id="quality-control" class="section level2">
 <h2>3. Quality control</h2>
-<p>Next we want to assess the quality of our sequencing data and check for any biases and contamination.</p>
+<p>Next we want to assess the quality of our sequencing data and check
+for any biases and contamination.</p>
 <div id="fastq-screen" class="section level3">
 <h3>FastQ screen</h3>
-<p>It is useful to know if your sequencing library contains the types of sequences you expect. <a href="http://www.bioinformatics.babraham.ac.uk/projects/fastq_screen/">FastQ Screen</a> searches for contaminants by mapping a sample of your reads to different genomes. It allows you to specify a custom set of genomes, e.g. all of the organisms you work on, along with PhiX, vectors and other contaminants commonly seen in sequencing experiments. We will run a screen of our data against a few default genomes:</p>
+<p>It is useful to know if your sequencing library contains the types of
+sequences you expect. <a
+href="http://www.bioinformatics.babraham.ac.uk/projects/fastq_screen/">FastQ
+Screen</a> searches for contaminants by mapping a sample of your reads
+to different genomes. It allows you to specify a custom set of genomes,
+e.g. all of the organisms you work on, along with PhiX, vectors and
+other contaminants commonly seen in sequencing experiments. We will run
+a screen of our data against a few default genomes:</p>
 <pre class="bash"><code>cd .. #Move up a directory again
 fastq_screen --conf /homes/genomes/tool_configs/fastq_screen/fastq_screen.conf fastq/*fq.gz --outdir fastq # * is a wild card character so includes all files that end fq.gz</code></pre>
-<p>Once complete, take a look at the output images in your browser via your public_html folder. This shows that most of your reads align to the human genome and that no reads align uniquely to other organisms:</p>
+<p>Once complete, take a look at the output images in your browser via
+your public_html folder. This shows that most of your reads align to the
+human genome and that no reads align uniquely to other organisms:</p>
 <p><img src="images/fastq_screen.png" width=1200></p>
 <hr />
 </div>
 <div id="fastqc" class="section level3">
 <h3>FastQC</h3>
-<p><a href="http://www.bioinformatics.babraham.ac.uk/projects/fastqc/">FastQC</a> provides simple quality control checks on raw sequence data coming from high throughput sequencing pipelines. It provides a modular set of analyses to quickly assess your data before proceeding with analysis.</p>
+<p><a
+href="http://www.bioinformatics.babraham.ac.uk/projects/fastqc/">FastQC</a>
+provides simple quality control checks on raw sequence data coming from
+high throughput sequencing pipelines. It provides a modular set of
+analyses to quickly assess your data before proceeding with
+analysis.</p>
 <pre class="bash"><code>fastqc fastq/*.fq.gz</code></pre>
-<p>FastQC will create report files for each of your datasets which we can view in the browser. We will go through each of the images during the workshop. For future reference, specific guidance on how to interpret the output of each module is provided in the <a href="http://www.bioinformatics.babraham.ac.uk/projects/fastqc/Help/">fastqc help pages</a>.</p>
+<p>FastQC will create report files for each of your datasets which we
+can view in the browser. We will go through each of the images during
+the workshop. For future reference, specific guidance on how to
+interpret the output of each module is provided in the <a
+href="http://www.bioinformatics.babraham.ac.uk/projects/fastqc/Help/">fastqc
+help pages</a>.</p>
 <p>An example of poor quality sequencing at the end of short reads:</p>
 <p><img src="images/Poor_sequence_quality.png" width=700></p>
-<p>The software gives a <em>pass</em>, <em>fail</em> or <em>warning</em> flag for each test based on what we would expect from a regular DNA-sequencing run. It is important to realise that FastQC does not understand the origin of your data and that different datasets will have different characteristics. For instance RNA sequencing often involves the use of <strong>random hexamer primers</strong> that are <a href="https://sequencing.qcfail.com/articles/positional-sequence-bias-in-random-primed-libraries/">not as random as you might expect</a>. The profile below in the first ~15 bases is perfectly normal for these samples but will be flagged as an error by FastQC:</p>
+<p>The software gives a <em>pass</em>, <em>fail</em> or <em>warning</em>
+flag for each test based on what we would expect from a regular
+DNA-sequencing run. It is important to realise that FastQC does not
+understand the origin of your data and that different datasets will have
+different characteristics. For instance RNA sequencing often involves
+the use of <strong>random hexamer primers</strong> that are <a
+href="https://sequencing.qcfail.com/articles/positional-sequence-bias-in-random-primed-libraries/">not
+as random as you might expect</a>. The profile below in the first ~15
+bases is perfectly normal for these samples but will be flagged as an
+error by FastQC:</p>
 <p><img src="images/Random_hexamer_priming.png" width=700></p>
-<p>Visit the <a href="https://sequencing.qcfail.com/author/simon/">QCFail</a> website for more examples and advice on quality control for NGS datasets.</p>
+<p>Visit the <a
+href="https://sequencing.qcfail.com/author/simon/">QCFail</a> website
+for more examples and advice on quality control for NGS datasets.</p>
 <hr />
 </div>
 <div id="multiqc" class="section level3">
 <h3>MultiQC</h3>
-<p>We can view summaries of multiple reports at once by using <a href="http://multiqc.info/">multiqc</a>:</p>
+<p>We can view summaries of multiple reports at once by using <a
+href="http://multiqc.info/">multiqc</a>:</p>
 <pre class="bash"><code>multiqc -o fastq fastq</code></pre>
-<p>MultiQC searches for report files in a directory and compiles them into a single report. Open the multiqc report via a web browser to see how the raw datasets compare. Here we have the output of FastQ_screen and FastQC, but MultiQC works with the outputs of many other tools which we’ll see later.</p>
-<p>If we look at the <em>adapter content</em> and <em>over represented sequences</em> sections we can see a small amount of contamination particularly at the ends of the sequencing reads.</p>
+<p>MultiQC searches for report files in a directory and compiles them
+into a single report. Open the multiqc report via a web browser to see
+how the raw datasets compare. Here we have the output of FastQ_screen
+and FastQC, but MultiQC works with the outputs of many other tools which
+we’ll see later.</p>
+<p>If we look at the <em>adapter content</em> and <em>over represented
+sequences</em> sections we can see a small amount of contamination
+particularly at the ends of the sequencing reads.</p>
 <br>
 <div class="key-points">
 <h2>
@@ -491,31 +606,59 @@ fastq_screen --conf /homes/genomes/tool_configs/fastq_screen/fastq_screen.conf f
 <hr />
 </div>
 </div>
-<div id="shell-scripts-pipelining-and-parallelisation" class="section level2">
+<div id="shell-scripts-pipelining-and-parallelisation"
+class="section level2">
 <h2>4. Shell scripts, pipelining and parallelisation</h2>
-<p>Up until now we have run command line tools on each one of our datasets in serial, this means they run one after the other. In this tutorial we only have a few small datasets and the tools run relatively quickly, but this approach won’t scale well to multiple large datasets. A more efficient approach is to create a <strong>script</strong> that will run all of our datasets in <strong>parallel</strong>.</p>
+<p>Up until now we have run command line tools on each one of our
+datasets in serial, this means they run one after the other. In this
+tutorial we only have a few small datasets and the tools run relatively
+quickly, but this approach won’t scale well to multiple large datasets.
+A more efficient approach is to create a <strong>script</strong> that
+will run all of our datasets in <strong>parallel</strong>.</p>
 <div id="parallel" class="section level3">
 <h3>parallel</h3>
-<p>Unix has a program called <strong>parallel</strong> which allows you to run tools on multiple datasets at the same time. The following command would list all of your gzipped fastq files and pipe “|” them into parallel.</p>
+<p>Unix has a program called <strong>parallel</strong> which allows you
+to run tools on multiple datasets at the same time. The following
+command would list all of your gzipped fastq files and pipe “|” them
+into parallel.</p>
 <pre class="bash"><code>ls fastq/*fq.gz | parallel -j 5 fastqc {} &amp;
 ps f</code></pre>
 <ul>
-<li><em>ls</em> lists files ending with .fq.gz in your fastq directory and pipes the names into the parallel command.</li>
-<li>The parallel <em>-j</em> flag stands for <em>juggle</em> and tells parallel to run 5 processes at the same time.</li>
-<li>In this case we are running fastqc and the <em>{}</em> is a place holder for the filenames we are piping in.</li>
-<li>The <em>&amp;</em> character runs these jobs in the background so we can continue to use the terminal.</li>
-<li><em>ps</em> is the <em>process status</em> tool which shows jobs running in the current session, we should see 5 instances of fastqc running.</li>
+<li><em>ls</em> lists files ending with .fq.gz in your fastq directory
+and pipes the names into the parallel command.</li>
+<li>The parallel <em>-j</em> flag stands for <em>jobs</em> and tells
+parallel to run 5 processes at the same time.</li>
+<li>In this case we are running fastqc and the <em>{}</em> is a place
+holder for the filenames we are piping in.</li>
+<li>The <em>&amp;</em> character runs these jobs in the background so we
+can continue to use the terminal.</li>
+<li><em>ps</em> is the <em>process status</em> tool which shows jobs
+running in the current session, we should see 5 instances of fastqc
+running.</li>
 </ul>
 <hr />
 </div>
 <div id="shell-scripts" class="section level3">
 <h3>Shell scripts</h3>
-<p>Putting all of your commands into a script is good practice for keeping track of your analysis and for reproducibility. We want to write scripts so they can be used again on different datasets and avoid <em>hardcoding</em> the names of files.</p>
-<p>First, let’s create a file that lists our sample names so we can feed this into our pipeline. We could just type this manually or use a bit of text processing like the code below, here fastq file names are ‘piped’ into parallel as above but we use a regular expression within <code>sed</code> to remove the file name suffix. The output file <code>samples.txt</code> now contains a list of our sample names.</p>
+<p>Putting all of your commands into a script is good practice for
+keeping track of your analysis and for reproducibility. We want to write
+scripts so they can be used again on different datasets and avoid
+<em>hardcoding</em> the names of files.</p>
+<p>First, let’s create a file that lists our sample names so we can feed
+this into our pipeline. We could just type this manually or use a bit of
+text processing like the code below, here fastq file names are ‘piped’
+into parallel as above but we use a regular expression within
+<code>sed</code> to remove the file name suffix. The output file
+<code>samples.txt</code> now contains a list of our sample names.</p>
 <pre class="bash"><code>ls fastq/*fq.gz | parallel basename | sed s/.fq.gz// &gt; samples.txt</code></pre>
-<p>Now let’s create our pipeline script. We’ll start by creating and opening a new file called <strong>pipeline.sh</strong>. The .sh stands for shell which is essentially just a name for the command line environment.</p>
+<p>Now let’s create our pipeline script. We’ll start by creating and
+opening a new file called <strong>pipeline.sh</strong>. The .sh stands
+for shell which is essentially just a name for the command line
+environment.</p>
 <pre class="bash"><code>emacs -nw pipeline.sh</code></pre>
-<p><strong>Emacs</strong> is a Unix text editor and the -nw flag opens a new window for editing. Here we are going to paste all of the commands we have used so far:</p>
+<p><strong>Emacs</strong> is a Unix text editor and the -nw flag opens a
+new window for editing. Here we are going to paste all of the commands
+we have used so far:</p>
 <pre><code>## PREPARATION
 
 ## Create a web directory to view output                         
@@ -539,14 +682,18 @@ fastqc fastq/*.fq.gz
 multiqc -o fastq fastq
 
 ## PREPROCESSING </code></pre>
-<p>The <strong>#</strong> symbol indicates a comment line and anything preceded by a # will not be run by the command line. It is good practice to comment your code.</p>
+<p>The <strong>#</strong> symbol indicates a comment line and anything
+preceded by a # will not be run by the command line. It is good practice
+to comment your code.</p>
 <br>
 <div class="challenge">
 <h2>
 <i class="fas fa-pencil-alt"></i> Challenge:
 </h2>
-<p>See if you can adapt the QC portion of the script to use parallel.</p>
-<strong>Hint:</strong> <code>cat samples.txt</code> will print the names of all of the samples.
+<p>See if you can adapt the QC portion of the script to use
+parallel.</p>
+<strong>Hint:</strong> <code>cat samples.txt</code> will print the names
+of all of the samples.
 <details>
 <summary>
 Solution
@@ -562,25 +709,62 @@ cat samples.txt | parallel -j 5 &quot;fastqc fastq/{}.fq.gz&quot;</code></pre>
 </details>
 </div>
 <p><br></p>
-<p>To save and exit the file press <strong>ctrl-x</strong>, followed by <strong>ctrl-c</strong> and then <strong>y</strong> to save.</p>
-<p>Let’s move on with our RNA-seq analysis. Every time we run a tool that creates new output we should add it to our pipeline.sh file. These code blocks will be highlighted in blue. We will learn how to run this script and the full analysis in one go later on.</p>
-<p>Although shell scripts save all of your commands they do not necessarily track the versions of software that you use or the current state of your environment and other tool dependencies. They are also unaware of the workflow of your data. More advanced methods of pipelining and containerisation are recommended for fully reproducible analyses and we will see an example of this using <strong>NextFlow</strong> in the next session.</p>
+<p>To save and exit the file press <strong>ctrl-x</strong>, followed by
+<strong>ctrl-c</strong> and then <strong>y</strong> to save.</p>
+<p>Let’s move on with our RNA-seq analysis. Every time we run a tool
+that creates new output we should add it to our pipeline.sh file. These
+code blocks will be highlighted in blue. We will learn how to run this
+script and the full analysis in one go later on.</p>
+<p>Although shell scripts save all of your commands they do not
+necessarily track the versions of software that you use or the current
+state of your environment and other tool dependencies. They are also
+unaware of the workflow of your data. More advanced methods of
+pipelining and containerisation are recommended for fully reproducible
+analyses and we will see an example of this using
+<strong>NextFlow</strong> in the next session.</p>
 <hr />
 </div>
 </div>
 <div id="quality-trimming-and-adapter-removal" class="section level2">
 <h2>5. Quality trimming and adapter removal</h2>
-<p>From the FastQC report we can see that the overall quality of our sequencing is good, however it is good practice to perform some pre-processing and filtering of reads. Poor quality sequencing can make a read less alignable, so it is good practice to <strong>quality trim</strong> the ends of reads until we get to the high quality portion. Trimming is not always necessary as some mapping programs will trim the reads for you or perform <strong>soft clipping</strong> where only part of a read is required to align, but studies have shown that pre-processing generally improves alignment rate if done correctly.</p>
-<p>Sequencing libraries are normally constructed by ligating adapters to fragments of DNA or RNA. If your read length is longer than your fragment then <a href="https://sequencing.qcfail.com/articles/read-through-adapters-can-appear-at-the-ends-of-sequencing-reads/">sequenced reads will contain the adapter sequence</a>. <strong>Adapter removal</strong> is a necessary consideration for your QC workflow, especially if adapters are detected by FastQC.</p>
-<p>An example of adapter contamination at the end of reads: <img src="images/Adapter_contamination.png" width=700></p>
-<p>Once reads have been trimmed they will vary in length. You may want to <strong>filter</strong> out reads that are now too short to be uniquely mapped. Normally a cutoff of 20-30bp is standard.</p>
+<p>From the FastQC report we can see that the overall quality of our
+sequencing is good, however it is good practice to perform some
+pre-processing and filtering of reads. Poor quality sequencing can make
+a read less alignable, so it is good practice to <strong>quality
+trim</strong> the ends of reads until we get to the high quality
+portion. Trimming is not always necessary as some mapping programs will
+trim the reads for you or perform <strong>soft clipping</strong> where
+only part of a read is required to align, but studies have shown that
+pre-processing generally improves alignment rate if done correctly.</p>
+<p>Sequencing libraries are normally constructed by ligating adapters to
+fragments of DNA or RNA. If your read length is longer than your
+fragment then <a
+href="https://sequencing.qcfail.com/articles/read-through-adapters-can-appear-at-the-ends-of-sequencing-reads/">sequenced
+reads will contain the adapter sequence</a>. <strong>Adapter
+removal</strong> is a necessary consideration for your QC workflow,
+especially if adapters are detected by FastQC.</p>
+<p>An example of adapter contamination at the end of reads:
+<img src="images/Adapter_contamination.png" width=700></p>
+<p>Once reads have been trimmed they will vary in length. You may want
+to <strong>filter</strong> out reads that are now too short to be
+uniquely mapped. Normally a cutoff of 20-30bp is standard.</p>
 <hr />
 <div id="trim-galore" class="section level3">
 <h3>Trim Galore!</h3>
-<p>In this workshop we will use <a href="https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/">Trim Galore!</a> for adapter and quality trimming. It is a wrapper around the popular tool <a href="http://cutadapt.readthedocs.org/en/stable/index.html">Cutadapt</a> which finds and removes unwanted sequences from high-throughput sequencing reads.</p>
-<p>Cutadapt can perform quality trimming, adapter removal and read filtering as well as many other operations to prepare your reads for optimal alignment. We will run <strong>trim galore!</strong> with the following parameters:</p>
+<p>In this workshop we will use <a
+href="https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/">Trim
+Galore!</a> for adapter and quality trimming. It is a wrapper around the
+popular tool <a
+href="http://cutadapt.readthedocs.org/en/stable/index.html">Cutadapt</a>
+which finds and removes unwanted sequences from high-throughput
+sequencing reads.</p>
+<p>Cutadapt can perform quality trimming, adapter removal and read
+filtering as well as many other operations to prepare your reads for
+optimal alignment. We will run <strong>trim galore!</strong> with the
+following parameters:</p>
 <ul>
-<li>q : Trim reads from the 3’ end with the given quality threshold (Phred score)</li>
+<li>q : Trim reads from the 3’ end with the given quality threshold
+(Phred score)</li>
 <li>length : Filter out reads below this length</li>
 <li>fastqc : Run fastqc on the trimmed reads</li>
 <li>illumina : Trim the standard Illumina adapter sequences</li>
@@ -593,27 +777,42 @@ cat samples.txt | parallel -j 5 &quot;trim_galore --fastqc -q 20 --illumina --le
 </div>
 <p>To view a trim_galore report:</p>
 <pre class="bash"><code>less trim_galore/Control_1.fq.gz_trimming_report.txt</code></pre>
-<p>Let’s compare the fastqc reports. Run <strong>multiqc</strong> on the trimmed data and compare this with the reports for the raw data.</p>
+<p>Let’s compare the fastqc reports. Run <strong>multiqc</strong> on the
+trimmed data and compare this with the reports for the raw data.</p>
 <div class="blue">
 <pre class="bash"><code>multiqc -f -o trim_galore trim_galore</code></pre>
 </div>
-<p>Remember to add the trim_galore and multiqc steps to your <strong>pipeline.sh</strong> file.</p>
+<p>Remember to add the trim_galore and multiqc steps to your
+<strong>pipeline.sh</strong> file.</p>
 <hr />
 </div>
-<div id="other-trimming-software-worth-investigating" class="section level3">
+<div id="other-trimming-software-worth-investigating"
+class="section level3">
 <h3>Other trimming software worth investigating</h3>
-<p>Trim Galore simplifies the Cutadapt command and also runs fastqc on the trimmed data. However, it is worth looking through the full functionality of Cutadapt which has many options for filtering and trimming reads. <strong>Trimmomatic</strong> is another tool which has a very sensitive algorithm for detecting adapters, especially in paired-end reads.</p>
+<p>Trim Galore simplifies the Cutadapt command and also runs fastqc on
+the trimmed data. However, it is worth looking through the full
+functionality of Cutadapt which has many options for filtering and
+trimming reads. <strong>Trimmomatic</strong> is another tool which has a
+very sensitive algorithm for detecting adapters, especially in
+paired-end reads.</p>
 <ul>
-<li><a href="https://cutadapt.readthedocs.io/en/stable/">Cutadapt</a></li>
-<li><a href="http://www.usadellab.org/cms/?page=trimmomatic">Trimmomatic</a></li>
+<li><a
+href="https://cutadapt.readthedocs.io/en/stable/">Cutadapt</a></li>
+<li><a
+href="http://www.usadellab.org/cms/?page=trimmomatic">Trimmomatic</a></li>
 </ul>
 </div>
 <div id="further-qc-steps" class="section level3">
 <h3>Further QC steps</h3>
-<p>It may be worth looking into a few other tools for quality control of RNA-seq data.</p>
+<p>It may be worth looking into a few other tools for quality control of
+RNA-seq data.</p>
 <ul>
-<li><a href="https://bioinfo.lifl.fr/RNA/sortmerna/">SortMeRNA</a> can remove sequences that map to ribosomal RNAs. Ideally, your library preparation should include steps to deplete ribosomal RNAs but you can also use tools to remove these from your analysis.</li>
-<li><a href="http://rseqc.sourceforge.net/">RSeQC</a> is a QC tool specifically for RNA-seq.</li>
+<li><a href="https://bioinfo.lifl.fr/RNA/sortmerna/">SortMeRNA</a> can
+remove sequences that map to ribosomal RNAs. Ideally, your library
+preparation should include steps to deplete ribosomal RNAs but you can
+also use tools to remove these from your analysis.</li>
+<li><a href="http://rseqc.sourceforge.net/">RSeQC</a> is a QC tool
+specifically for RNA-seq.</li>
 </ul>
 <br>
 <div class="key-points">
@@ -636,13 +835,32 @@ cat samples.txt | parallel -j 5 &quot;trim_galore --fastqc -q 20 --illumina --le
 </div>
 <div id="read-alignment" class="section level2">
 <h2>6. Read Alignment</h2>
-<p>There are many tools available for mapping reads to genomes and transcriptomes, each with their own purposes and strengths. RNA-seq data requires a <em>splice-aware</em> aligner that can handle splice junctions in the sequencing reads. The two most popular aligners are <a href="https://github.com/alexdobin/STAR">STAR</a>, which is very fast, and <a href="http://daehwankimlab.github.io/hisat2/manual/">HISAT2</a>, which is very accurate.</p>
-<p><img src="http://bifx-core.bio.ed.ac.uk/training/NGS_workshop/images/splice_mapping.png" /></p>
+<p>There are many tools available for mapping reads to genomes and
+transcriptomes, each with their own purposes and strengths. RNA-seq data
+requires a <em>splice-aware</em> aligner that can handle splice
+junctions in the sequencing reads. The two most popular aligners are <a
+href="https://github.com/alexdobin/STAR">STAR</a>, which is very fast,
+and <a href="http://daehwankimlab.github.io/hisat2/manual/">HISAT2</a>,
+which is very accurate.</p>
+<p><img
+src="http://bifx-core.bio.ed.ac.uk/training/NGS_workshop/images/splice_mapping.png" /></p>
 <div id="genome-assemblies-and-indexing" class="section level3">
 <h3>Genome assemblies and indexing</h3>
-<p>First, we need to select a reference genome to align to. Every time a reference genome is released or updated it is given a new name, often referred to as the genome build or assembly (..hg18, hg19, hg38). It is important to realise that different builds of the same genome are different sequences and thus their co-ordinate systems are incomparable. For instance position 10000000 on chr1 is T in hg19 and G in hg38.</p>
-<p>We are going to map our reads to the latest release of the human genome (<strong>hg38</strong> or <strong>GRCh38</strong>). We need to create an index file from the GRCh38 fasta sequence so that STAR can quickly access the reference sequences. Many of these indexes are pre-computed on our servers and stored under the /homes/genomes directory for everyone to use. The indexes for this workshop have are available at **.</p>
-<p>The code below shows how these were generated with STAR. You do not need to run this again.</p>
+<p>First, we need to select a reference genome to align to. Every time a
+reference genome is released or updated it is given a new name, often
+referred to as the genome build or assembly (..hg18, hg19, hg38). It is
+important to realise that different builds of the same genome are
+different sequences and thus their co-ordinate systems are incomparable.
+For instance position 10000000 on chr1 is T in hg19 and G in hg38.</p>
+<p>We are going to map our reads to the latest release of the human
+genome (<strong>hg38</strong> or <strong>GRCh38</strong>). We need to
+create an index file from the GRCh38 fasta sequence so that STAR can
+quickly access the reference sequences. Many of these indexes are
+pre-computed on our servers and stored under the /homes/genomes
+directory for everyone to use. The indexes for this workshop have are
+available at **.</p>
+<p>The code below shows how these were generated with STAR. You do not
+need to run this again.</p>
 <pre class="bash"><code>## Download sequence files and latest annotations from Ensembl
 #wget http://ftp.ensembl.org/pub/release-106/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz  ## Use primary assembly without Alt contigs but including scaffolds
 #wget http://ftp.ensembl.org/pub/release-106/gtf/homo_sapiens/Homo_sapiens.GRCh38.106.gtf.gz
@@ -656,7 +874,8 @@ cat samples.txt | parallel -j 5 &quot;trim_galore --fastqc -q 20 --illumina --le
 </div>
 <div id="mapping-reads-with-star" class="section level3">
 <h3>Mapping reads with STAR</h3>
-<p>Now that we have an index we can align our reads to the human genome with STAR.</p>
+<p>Now that we have an index we can align our reads to the human genome
+with STAR.</p>
 <div class="blue">
 <pre class="bash"><code>mkdir STAR ## make a new folder for read alignments
 cat samples.txt | parallel -j 5 &quot;STAR --genomeDir annotation/STAR_index_hg38.ensembl106 --readFilesCommand zcat --readFilesIn sub/trim_galore/{}_trimmed.fq.gz --runThreadN 4 --outSAMtype BAM SortedByCoordinate --outFileNamePrefix sub/STAR/{}. --sjdbGTFfile annotation/Homo_sapiens.GRCh38.106.gtf --outWigType wiggle --outWigNorm RPM&quot;</code></pre>
@@ -666,16 +885,25 @@ cat samples.txt | parallel -j 5 &quot;STAR --genomeDir annotation/STAR_index_hg3
 <li>genomeDir : The location of the STAR genome index</li>
 <li>readFilesInCommand : The unix command for reading a *.gz file</li>
 <li>readFilesIn : The location of the fq.gz file</li>
-<li>runThreadN : The number of CPU threads available to each STAR process</li>
+<li>runThreadN : The number of CPU threads available to each STAR
+process</li>
 <li>outSAMtype : The output file format</li>
 <li>outFileNamePrefix : Used to name the outputs</li>
-<li>sjdbGTFfile : A gene model and splice junction annotation file in gtf format</li>
+<li>sjdbGTFfile : A gene model and splice junction annotation file in
+gtf format</li>
 <li>outWigType : Additional output of read coverage profile</li>
 <li>outWigNorm : Normalisation strategy for read coverage profile</li>
 </ul>
-<p>Note that we do not need to include the –sjdbGTFfile here as it was already used in creating the index. We can provide the annotations at either step or provide a different file with additional annotation.</p>
-<p>We recommend reading the <a href="https://github.com/alexdobin/STAR/blob/master/doc/STARmanual.pdf">STAR manual</a> to fully understand all of the parameters and output options. Running alignment software with default parameters may not be the best option for your data.</p>
-<p>When your alignment has completed, take a look at the output STAR report:</p>
+<p>Note that we do not need to include the –sjdbGTFfile here as it was
+already used in creating the index. We can provide the annotations at
+either step or provide a different file with additional annotation.</p>
+<p>We recommend reading the <a
+href="https://github.com/alexdobin/STAR/blob/master/doc/STARmanual.pdf">STAR
+manual</a> to fully understand all of the parameters and output options.
+Running alignment software with default parameters may not be the best
+option for your data.</p>
+<p>When your alignment has completed, take a look at the output STAR
+report:</p>
 <pre class="bash"><code>less STAR/Control_1.Log.final.out</code></pre>
 <br>
 <div class="discussion">
@@ -693,17 +921,37 @@ cat samples.txt | parallel -j 5 &quot;STAR --genomeDir annotation/STAR_index_hg3
 </div>
 <div id="sambamcram-format-and-samtools" class="section level3">
 <h3>SAM/BAM/CRAM format and Samtools</h3>
-<p>The standard output for most mapping software is SAM (sequence alignment/map format). SAM files contain many columns that describe the position of each alignment as well as information on the quality of the alignment, mismatches, the number of times a read mapped, mapping of paired ends and other custom flags and statistics. SAM files can be very large so there are compressed alternatives BAM and CRAM. The <a href="http://www.htslib.org/doc/samtools.html">samtools</a> package has many useful tools for viewing, filtering and manipulating files in SAM format. We will use some of these below.</p>
-<p>Take a look at the <a href="https://samtools.github.io/hts-specs/SAMv1.pdf">SAM format specification</a> and the first few lines of your BAM output using <code>samtools</code>.</p>
+<p>The standard output for most mapping software is SAM (sequence
+alignment/map format). SAM files contain many columns that describe the
+position of each alignment as well as information on the quality of the
+alignment, mismatches, the number of times a read mapped, mapping of
+paired ends and other custom flags and statistics. SAM files can be very
+large so there are compressed alternatives BAM and CRAM. The <a
+href="http://www.htslib.org/doc/samtools.html">samtools</a> package has
+many useful tools for viewing, filtering and manipulating files in SAM
+format. We will use some of these below.</p>
+<p>Take a look at the <a
+href="https://samtools.github.io/hts-specs/SAMv1.pdf">SAM format
+specification</a> and the first few lines of your BAM output using
+<code>samtools</code>.</p>
 <pre class="bash"><code>samtools view STAR/Control_1.Aligned.sortedByCoord.out.bam | less</code></pre>
-<p>The second column is the <strong>SAM flag</strong> and contains coded information about each alignment. Use the <a href="https://broadinstitute.github.io/picard/explain-flags.html">Explain SAM flags</a> resource to find out more about the alignments in your file.</p>
-<p>We can also see the samtools header using the -h flag which contains information on the parameters and indexes used to create the file.</p>
+<p>The second column is the <strong>SAM flag</strong> and contains coded
+information about each alignment. Use the <a
+href="https://broadinstitute.github.io/picard/explain-flags.html">Explain
+SAM flags</a> resource to find out more about the alignments in your
+file.</p>
+<p>We can also see the samtools header using the -h flag which contains
+information on the parameters and indexes used to create the file.</p>
 <pre class="bash"><code>samtools view -h STAR/Control_1.Aligned.sortedByCoord.out.bam | less</code></pre>
-<p>We can index our bam files with <code>samtools index</code>. This creates an index file for quick programmatic access to the binary file. Indexing is required for some of the samtools programs to work as well as for viewing the reads on genome browsers.</p>
+<p>We can index our bam files with <code>samtools index</code>. This
+creates an index file for quick programmatic access to the binary file.
+Indexing is required for some of the samtools programs to work as well
+as for viewing the reads on genome browsers.</p>
 <div class="blue">
 <pre class="bash"><code>cat samples.txt | parallel -j 5 &quot;samtools index STAR/{}.Aligned.sortedByCoord.out.bam&quot; ## Index the bam files</code></pre>
 </div>
-<p>The command <code>samtools idxstats</code> outputs the number of reads aligned to each sequence in our reference.</p>
+<p>The command <code>samtools idxstats</code> outputs the number of
+reads aligned to each sequence in our reference.</p>
 <pre class="bash"><code>samtools idxstats STAR/Control_1.Aligned.sortedByCoord.out.bam</code></pre>
 <br>
 <div class="discussion">
@@ -736,36 +984,76 @@ cat samples.txt | parallel -j 5 &quot;STAR --genomeDir annotation/STAR_index_hg3
 </div>
 <div id="post-alignment-processing" class="section level2">
 <h2>7. Post alignment processing</h2>
-<p>Now that we have aligned our reads we may want to do some filtering before any downstream analysis. Make sure you are aware of the alignments that are reported by your mapping program and the parameters used. For instance, are unmapped reads included in the BAM file? Are all alignments to repeats reported or just one? Are paired-end alignments still reported if only one end maps?</p>
+<p>Now that we have aligned our reads we may want to do some filtering
+before any downstream analysis. Make sure you are aware of the
+alignments that are reported by your mapping program and the parameters
+used. For instance, are unmapped reads included in the BAM file? Are all
+alignments to repeats reported or just one? Are paired-end alignments
+still reported if only one end maps?</p>
 <div id="filtering-reads-with-samtools" class="section level3">
 <h3>Filtering reads with samtools</h3>
-<p>There are many ways to filter your BAM files with samtools and other programs to remove unwanted alignments that may negatively affect your downstream analysis. First lets look at the alignments contained in one of our bam files with <code>samtools flagstat</code>:</p>
+<p>There are many ways to filter your BAM files with samtools and other
+programs to remove unwanted alignments that may negatively affect your
+downstream analysis. First lets look at the alignments contained in one
+of our bam files with <code>samtools flagstat</code>:</p>
 <pre class="bash"><code>samtools flagstat STAR/Control_1.Aligned.sortedByCoord.out.bam</code></pre>
-<p>Flagstat seems to report more alignments than the number of reads shown in our STAR report, how can this be? Our BAM file contains one record per alignment and some reads may align to multiple locations. STAR assigns each read a primary alignment, which is selected randomly from the top scoring alignments.</p>
-<p>We can use <code>samtools view -f</code> to include, and <code>-F</code> to exclude reads with a given SAM flag. The flag 260 is the sum of 4 (read is unmapped) and 256 (not primary alignment). This will filter unmapped reads and non-primary alignments to give us a single alignment for each mapped read.</p>
+<p>Flagstat seems to report more alignments than the number of reads
+shown in our STAR report, how can this be? Our BAM file contains one
+record per alignment and some reads may align to multiple locations.
+STAR assigns each read a primary alignment, which is selected randomly
+from the top scoring alignments.</p>
+<p>We can use <code>samtools view -f</code> to include, and
+<code>-F</code> to exclude reads with a given SAM flag. The flag 260 is
+the sum of 4 (read is unmapped) and 256 (not primary alignment). This
+will filter unmapped reads and non-primary alignments to give us a
+single alignment for each mapped read.</p>
 <div class="blue">
 <pre class="bash"><code>cat samples.txt | parallel -j 5 &quot;samtools view -F 260 -bh -o  STAR/{}.primary.bam STAR/{}.Aligned.sortedByCoord.out.bam; samtools index STAR/{}.primary.bam&quot;</code></pre>
 </div>
-<p>The <code>-bh</code> option tells samtools view to output in BAM format and to include the header.</p>
-<p>If we run <code>samtools flagstat</code> on this filtered bam file we should now have one alignment per mapped read.</p>
+<p>The <code>-bh</code> option tells samtools view to output in BAM
+format and to include the header.</p>
+<p>If we run <code>samtools flagstat</code> on this filtered bam file we
+should now have one alignment per mapped read.</p>
 <pre class="bash"><code>samtools flagstat STAR/Control_1.primary.bam</code></pre>
 <hr />
 </div>
 <div id="multimap-reads-and-duplicate-reads" class="section level3">
 <h3>Multimap reads and Duplicate reads</h3>
-<p>Multimap and duplicate reads are often confused so it is important to understand what these are and how they affect your data:</p>
+<p>Multimap and duplicate reads are often confused so it is important to
+understand what these are and how they affect your data:</p>
 <ul>
-<li><strong>Multimap reads</strong> = The read exists once in your library and aligns to multiple repeat locations in the reference genome.</li>
-<li><strong>Duplicate reads</strong> = Multiple unique reads with the same sequence that align to identical locations in the genome.</li>
+<li><strong>Multimap reads</strong> = The read exists once in your
+library and aligns to multiple repeat locations in the reference
+genome.</li>
+<li><strong>Duplicate reads</strong> = Multiple unique reads with the
+same sequence that align to identical locations in the genome.</li>
 </ul>
 <p><img src="images/multi.png" alt="pic" width="600"/></p>
-<p><strong>Multimap reads</strong> are difficult to analyse as their ambiguity can confound results. Many applications require the use of <strong>unique</strong> alignments only, thus multimap reads often need to be removed from your BAM file.</p>
-<p>Alignment tools assign a <strong>mapping quality</strong> to each read (column 5 in BAM) between 0 and 255 that describes the confidence in the alignment position.</p>
-<p>You should be aware that <a href="https://sequencing.qcfail.com/articles/mapq-values-are-really-useful-but-their-implementation-is-a-mess/">mapping qualities differ between mapping tools</a>. STAR uses mapping quality scores of 0 and 255 to represent multimap and unique reads respectively. Filtering out reads with a mapping quality &lt; 255 means that all remaining reads align to a single unique position. We can use <code>samtools view -q</code> to filter based on mapping quality.</p>
+<p><strong>Multimap reads</strong> are difficult to analyse as their
+ambiguity can confound results. Many applications require the use of
+<strong>unique</strong> alignments only, thus multimap reads often need
+to be removed from your BAM file.</p>
+<p>Alignment tools assign a <strong>mapping quality</strong> to each
+read (column 5 in BAM) between 0 and 255 that describes the confidence
+in the alignment position.</p>
+<p>You should be aware that <a
+href="https://sequencing.qcfail.com/articles/mapq-values-are-really-useful-but-their-implementation-is-a-mess/">mapping
+qualities differ between mapping tools</a>. STAR uses mapping quality
+scores of 0 and 255 to represent multimap and unique reads respectively.
+Filtering out reads with a mapping quality &lt; 255 means that all
+remaining reads align to a single unique position. We can use
+<code>samtools view -q</code> to filter based on mapping quality.</p>
 <div class="blue">
 <pre class="bash"><code>cat samples.txt | parallel -j 5 &quot;samtools view -b -q 255 STAR/{}.primary.bam -o STAR/{}.unique.bam; samtools index STAR/{}.unique.bam&quot;</code></pre>
 </div>
-<p><strong>Duplicate reads</strong> are often observed as tall spikes in your read depth profile where reads are stacked directly on top of each other. A high level of duplication in your library may be due to over amplification by PCR or contamination. In RNA-seq experiments the chances of selecting identical sequences are much higher as our sample size is much smaller (length of transcriptome vs length of genome) and multiple copies of the same sequence (transcripts) exist independently. Thus, it is common practice to retain duplicate reads.</p>
+<p><strong>Duplicate reads</strong> are often observed as tall spikes in
+your read depth profile where reads are stacked directly on top of each
+other. A high level of duplication in your library may be due to over
+amplification by PCR or contamination. In RNA-seq experiments the
+chances of selecting identical sequences are much higher as our sample
+size is much smaller (length of transcriptome vs length of genome) and
+multiple copies of the same sequence (transcripts) exist independently.
+Thus, it is common practice to retain duplicate reads.</p>
 <br>
 <div class="resources">
 <h2>
@@ -773,18 +1061,31 @@ cat samples.txt | parallel -j 5 &quot;STAR --genomeDir annotation/STAR_index_hg3
 </h2>
 <p>Learn more about duplication and removing duplicate reads:</p>
 <ul>
-<li><a href="https://sequencing.qcfail.com/articles/libraries-can-contain-technical-duplication/">Duplication bias</a></li>
-<li>The <a href="https://broadinstitute.github.io/picard/index.html">Picard</a> package has many useful utilities for manipulating SAM/BAM files. The <strong>MarkDuplicates</strong> tool will check the alignment positions for duplicate reads and mark or remove them from your data depending on how you wish to treat them.</li>
+<li><a
+href="https://sequencing.qcfail.com/articles/libraries-can-contain-technical-duplication/">Duplication
+bias</a></li>
+<li>The <a
+href="https://broadinstitute.github.io/picard/index.html">Picard</a>
+package has many useful utilities for manipulating SAM/BAM files. The
+<strong>MarkDuplicates</strong> tool will check the alignment positions
+for duplicate reads and mark or remove them from your data depending on
+how you wish to treat them.</li>
 </ul>
 </div>
 <p><br></p>
 <hr />
 </div>
-<div id="removing-alignments-to-regions-of-the-genome" class="section level3">
+<div id="removing-alignments-to-regions-of-the-genome"
+class="section level3">
 <h3>Removing alignments to regions of the genome</h3>
-<p>In some cases you may wish to remove reads that align to specific regions of the genome. For instance, if you still have a lot of ribosomal RNAs that will skew your downstream analysis.</p>
+<p>In some cases you may wish to remove reads that align to specific
+regions of the genome. For instance, if you still have a lot of
+ribosomal RNAs that will skew your downstream analysis.</p>
 <ul>
-<li><a href="https://bedtools.readthedocs.io/en/latest/content/tools/intersect.html">bedtools intersect</a> can remove reads from BAM files that align to specific genomic locations.</li>
+<li><a
+href="https://bedtools.readthedocs.io/en/latest/content/tools/intersect.html">bedtools
+intersect</a> can remove reads from BAM files that align to specific
+genomic locations.</li>
 </ul>
 <br>
 <div class="key-points">
@@ -809,16 +1110,35 @@ cat samples.txt | parallel -j 5 &quot;STAR --genomeDir annotation/STAR_index_hg3
 <hr />
 </div>
 </div>
-<div id="visualising-alignments-on-a-genome-browser" class="section level2">
+<div id="visualising-alignments-on-a-genome-browser"
+class="section level2">
 <h2>8. Visualising alignments on a genome browser</h2>
-<p>It is always a good idea to visually inspect your data on a genome browser. Has the sequencing worked as expected? Are there noticeable differences between samples by eye? Do RNA-seq reads align to the expected strand?</p>
+<p>It is always a good idea to visually inspect your data on a genome
+browser. Has the sequencing worked as expected? Are there noticeable
+differences between samples by eye? Do RNA-seq reads align to the
+expected strand?</p>
 <div id="converting-bam-files-to-bigwig" class="section level3">
 <h3>Converting BAM files to bigWig</h3>
-<p>BAM files contain information about each read, which is great if you want to look at individual alignments and splice junctions, but they are typically large and slow to work with. If we are only interested in read coverage we can convert our BAM files to graphs of sequencing depth per base.</p>
-<p>The <strong>wiggle</strong> file format has three columns which represent genomic co-ordinates (chr, start, end) and a fourth which represents a score, in this case the read coverage. A compressed version of this format, called <a href="https://genome.ucsc.edu/goldenPath/help/bigWig.html"><strong>bigWig</strong></a>, is used by genome browsers.</p>
-<p>You may have noticed that we already asked STAR to output wiggle files. STAR gives us wiggle files for both unique and unique+multimap reads and also splits these up by strand. Let’s take a look at one of these files:</p>
+<p>BAM files contain information about each read, which is great if you
+want to look at individual alignments and splice junctions, but they are
+typically large and slow to work with. If we are only interested in read
+coverage we can convert our BAM files to graphs of sequencing depth per
+base.</p>
+<p>The <strong>wiggle</strong> file format has three columns which
+represent genomic co-ordinates (chr, start, end) and a fourth which
+represents a score, in this case the read coverage. A compressed version
+of this format, called <a
+href="https://genome.ucsc.edu/goldenPath/help/bigWig.html"><strong>bigWig</strong></a>,
+is used by genome browsers.</p>
+<p>You may have noticed that we already asked STAR to output wiggle
+files. STAR gives us wiggle files for both unique and unique+multimap
+reads and also splits these up by strand. Let’s take a look at one of
+these files:</p>
 <pre class="bash"><code>head STAR/Control_1.Signal.Unique.str1.out.wig</code></pre>
-<p>Let’s convert the <strong>unique</strong> files to bigWig format for visualisation. The tool <strong>wigToBigWig</strong> requires three arguments, an input file, a file of chromosome lengths, and the name of the output file.</p>
+<p>Let’s convert the <strong>unique</strong> files to bigWig format for
+visualisation. The tool <strong>wigToBigWig</strong> requires three
+arguments, an input file, a file of chromosome lengths, and the name of
+the output file.</p>
 <div class="blue">
 <pre class="bash"><code>mkdir visualisation ## Create a folder for visualisation files
 cat samples.txt | parallel -j 5 &quot;wigToBigWig STAR/{}.Signal.Unique.str1.out.wig annotation/Homo_sapiens.GRCh38.dna.primary_assembly.len visualisation/{}.unique.r.bw; wigToBigWig full/STAR/{}.Signal.Unique.str2.out.wig annotation/Homo_sapiens.GRCh38.dna.primary_assembly.len full/visualisation/{}.unique.f.bw&quot;</code></pre>
@@ -827,22 +1147,41 @@ cat samples.txt | parallel -j 5 &quot;wigToBigWig STAR/{}.Signal.Unique.str1.out
 </div>
 <div id="rna-seq-normalisation" class="section level3">
 <h3>RNA-seq normalisation</h3>
-<p>TPM, RPM, which are normalised to read depth (RPM = Reads per million bases)</p>
-<p>If you would like to create <em>bigWig</em> files directly from BAM files, e.g. after filtering or from other aligners, we recommend using <a href="https://deeptools.readthedocs.io">deepTools bamCoverage</a>. <strong>bamCoverage</strong> has lots of options for filtering, smoothing and normalising read coverage profiles.</p>
-<p>Some analysis pipelines use <a href="https://bedtools.readthedocs.io/en/latest/content/tools/genomecov.html">genomeCoverageBed</a> but be aware that this may not output normalised values.</p>
+<p>TPM, RPM, which are normalised to read depth (RPM = Reads per million
+bases)</p>
+<p>If you would like to create <em>bigWig</em> files directly from BAM
+files, e.g. after filtering or from other aligners, we recommend using
+<a href="https://deeptools.readthedocs.io">deepTools bamCoverage</a>.
+<strong>bamCoverage</strong> has lots of options for filtering,
+smoothing and normalising read coverage profiles.</p>
+<p>Some analysis pipelines use <a
+href="https://bedtools.readthedocs.io/en/latest/content/tools/genomecov.html">genomeCoverageBed</a>
+but be aware that this may not output normalised values.</p>
 <hr />
 </div>
 <div id="visualising-data-on-igv" class="section level3">
 <h3>Visualising data on IGV</h3>
-<p><a href="https://www.broadinstitute.org/igv/">IGV</a> (Integrative genomics viewer) is a powerful genome browser from the Broad institute. It is perfect for viewing your sequencing files as loading data is easy, common formats are understood, views are customisable and navigation is quick.</p>
+<p><a href="https://www.broadinstitute.org/igv/">IGV</a> (Integrative
+genomics viewer) is a powerful genome browser from the Broad institute.
+It is perfect for viewing your sequencing files as loading data is easy,
+common formats are understood, views are customisable and navigation is
+quick.</p>
 <p>Let’s also add of our bam files to the visualisation folder.</p>
 <div class="blue">
 <pre class="bash"><code>cd visualisation
 ln -s ../STAR/*unique.bam* .
 cd ../</code></pre>
 </div>
-<p>It is best to download the <a href="https://www.broadinstitute.org/igv/">desktop app</a> for use on your own machine but if you are using a university managed computer you can access the web app at <a href="https://igv.org/app/">https://igv.org/app/</a>.</p>
-<p>Open IGV and set the genome to <strong>hg38</strong>, then find your <em>visualisation</em> folder online. In the desktop version you can drag and drop files into IGV. If you are using the webapp you will need to download the files you require and open them using the <em>tracks</em> menu.</p>
+<p>It is best to download the <a
+href="https://www.broadinstitute.org/igv/">desktop app</a> for use on
+your own machine but if you are using a university managed computer you
+can access the web app at <a
+href="https://igv.org/app/">https://igv.org/app/</a>.</p>
+<p>Open IGV and set the genome to <strong>hg38</strong>, then find your
+<em>visualisation</em> folder online. In the desktop version you can
+drag and drop files into IGV. If you are using the webapp you will need
+to download the files you require and open them using the
+<em>tracks</em> menu.</p>
 <p>Load the two bigWig tracks for MOV10_OE_1 into IGV:</p>
 <p><img src="images/igv_genome.png" width=1200></p>
 <p>First, let’s navigate the chromosome:</p>
@@ -850,27 +1189,37 @@ cd ../</code></pre>
 <li>Use the <em>+</em> / <em>-</em> zoom bar at the top right</li>
 <li>Drag and highlight an area to zoom on the genome ruler</li>
 <li>Type a position or gene identifier in to the search box</li>
-<li>If we zoom in close enough our BAM file will load and we can investigate alignments of individual reads</li>
+<li>If we zoom in close enough our BAM file will load and we can
+investigate alignments of individual reads</li>
 </ul>
 <p>Now let’s customise our view:</p>
 <ol style="list-style-type: decimal">
-<li>Select <strong>Tracks-&gt;Fit Data To Window</strong> To automatically set track heights to fill the view (not available on web app).</li>
-<li>Right click on the Refseq genes track (or use the cog on web app) and switch between display modes <strong>Collapsed</strong>, <strong>Expanded</strong> and <strong>Squished</strong>. (Use the horizontal panel divider to adjust height)</li>
-<li>Use the right click menu or cog on the bigwig track name to customise the display. Try the following:</li>
+<li>Select <strong>Tracks-&gt;Fit Data To Window</strong> To
+automatically set track heights to fill the view (not available on web
+app).</li>
+<li>Right click on the Refseq genes track (or use the cog on web app)
+and switch between display modes <strong>Collapsed</strong>,
+<strong>Expanded</strong> and <strong>Squished</strong>. (Use the
+horizontal panel divider to adjust height)</li>
+<li>Use the right click menu or cog on the bigwig track name to
+customise the display. Try the following:</li>
 <li>Rename the track</li>
 <li>Change the track colour</li>
 <li>Change the graph type</li>
 <li>Change the windowing function</li>
 <li>Adjust the data range</li>
-<li>Set the scale to <strong>Autoscale</strong>. This automatically sets the Y-axis to the height of the tallest peak in your view.</li>
-<li>Select multiple tracks and set the scale to <strong>Group autoscale</strong>. This will automatically scale tracks together.</li>
+<li>Set the scale to <strong>Autoscale</strong>. This automatically sets
+the Y-axis to the height of the tallest peak in your view.</li>
+<li>Select multiple tracks and set the scale to <strong>Group
+autoscale</strong>. This will automatically scale tracks together.</li>
 </ol>
 <br>
 <div class="discussion">
 <h2>
 <i class="far fa-bell"></i> Discussion
 </h2>
-<p>There are two large spikes on chr1 (forward strand) and chr6 (reverse strand).</p>
+<p>There are two large spikes on chr1 (forward strand) and chr6 (reverse
+strand).</p>
 <ul>
 <li>What are these genes?</li>
 <li>Would you expect to see similar spikes in the control?</li>
@@ -879,17 +1228,23 @@ cd ../</code></pre>
 </div>
 <p><br></p>
 <p><img src="images/MOV10.png" width=1200></p>
-<p>Now load a corresponding BAM file <code>MOV10_OE_1.unique.bam</code> for one of your tracks. Make sure the <code>.bai</code> index file is in the same folder as the BAM. Navigate to the MOV10 gene, you should be able to see all of the aligned reads.</p>
+<p>Now load a corresponding BAM file <code>MOV10_OE_1.unique.bam</code>
+for one of your tracks. Make sure the <code>.bai</code> index file is in
+the same folder as the BAM. Navigate to the MOV10 gene, you should be
+able to see all of the aligned reads.</p>
 <p><img src="images/igv_bam.png" width=1200></p>
-<p>Use the menu for the BAM file to customise the way reads are displayed.</p>
+<p>Use the menu for the BAM file to customise the way reads are
+displayed.</p>
 <br>
 <div class="discussion">
 <h2>
 <i class="far fa-bell"></i> Discussion
 </h2>
 <ul>
-<li>Can you identify <strong>mismatches</strong> in read alignments?</li>
-<li>Can you identify reads mapping across <strong>splice junctions</strong>?</li>
+<li>Can you identify <strong>mismatches</strong> in read
+alignments?</li>
+<li>Can you identify reads mapping across <strong>splice
+junctions</strong>?</li>
 <li>Can you create a <strong>sashimi</strong> plot?</li>
 </ul>
 </div>
@@ -899,7 +1254,12 @@ cd ../</code></pre>
 </div>
 <div id="other-genome-browsers" class="section level3">
 <h3>Other genome browsers</h3>
-<p>We recommend IGV as it allows you to quickly explore your data. Several other genome browsers exist and the <a href="http://www.ensembl.org">Ensembl</a> and <a href="https://genome.ucsc.edu/">UCSC</a> websites are particularly useful for viewing your data online alongside published experimental data and genomic annotations that exist in their databases.</p>
+<p>We recommend IGV as it allows you to quickly explore your data.
+Several other genome browsers exist and the <a
+href="http://www.ensembl.org">Ensembl</a> and <a
+href="https://genome.ucsc.edu/">UCSC</a> websites are particularly
+useful for viewing your data online alongside published experimental
+data and genomic annotations that exist in their databases.</p>
 <br>
 <div class="key-points">
 <h2>
@@ -920,10 +1280,20 @@ cd ../</code></pre>
 </div>
 <div id="quantifying-expression-levels" class="section level2">
 <h2>9. Quantifying expression levels</h2>
-<p>Once we have inspected our data and are happy with our alignments, we can quantify expression levels for annotated transcripts. Pseudo-alignment tools, such as <a href="https://salmon.readthedocs.io/en/latest/salmon.html">Salmon</a>, map sequencing reads directly to transcripts. They are extremely fast, can handle multi-map reads, and take into account multiple isoforms, transcript lengths and sequencing biases when estimating abundance.</p>
+<p>Once we have inspected our data and are happy with our alignments, we
+can quantify expression levels for annotated transcripts.
+Pseudo-alignment tools, such as <a
+href="https://salmon.readthedocs.io/en/latest/salmon.html">Salmon</a>,
+map sequencing reads directly to transcripts. They are extremely fast,
+can handle multi-map reads, and take into account multiple isoforms,
+transcript lengths and sequencing biases when estimating abundance.</p>
 <div id="create-a-salmon-index" class="section level3">
 <h3>Create a Salmon index</h3>
-<p>Like STAR, Salmon requires an index for alignment. The indexes require fasta sequences of all coding and non-coding RNAs as well as the genomic sequence. The Salmon index for this workshop has been pre-computed using the code below. You do not need to run this as it will already be in the annotation folder you linked previously.</p>
+<p>Like STAR, Salmon requires an index for alignment. The indexes
+require fasta sequences of all coding and non-coding RNAs as well as the
+genomic sequence. The Salmon index for this workshop has been
+pre-computed using the code below. You do not need to run this as it
+will already be in the annotation folder you linked previously.</p>
 <pre class="bash"><code>## Download cdna and ncrna fasta files from Ensembl
 #wget http://ftp.ensembl.org/pub/release-106/fasta/homo_sapiens/cdna/Homo_sapiens.GRCh38.cdna.all.fa.gz
 #wget http://ftp.ensembl.org/pub/release-106/fasta/homo_sapiens/ncrna/Homo_sapiens.GRCh38.ncrna.fa.gz
@@ -951,14 +1321,22 @@ cd ../</code></pre>
 <h2>
 <i class="fas fa-book"></i> Further Learning
 </h2>
-<p>Creating Salmon indexes is more complicated than STAR but the bioinformatics team can help you out if you need to do this. Several pre-computed indexes exist in /homes/genomes. You can also read more about the method <a href="https://combine-lab.github.io/alevin-tutorial/2019/selective-alignment">here</a>.</p>
+<p>Creating Salmon indexes is more complicated than STAR but the
+bioinformatics team can help you out if you need to do this. Several
+pre-computed indexes exist in /homes/genomes. You can also read more
+about the method <a
+href="https://combine-lab.github.io/alevin-tutorial/2019/selective-alignment">here</a>.</p>
 </div>
 <p><br></p>
 <hr />
 </div>
 <div id="pseudo-alignment-with-salmon" class="section level3">
 <h3>Pseudo-alignment with Salmon</h3>
-<p>We can now run Salmon to estimate expression levels of transcripts. Biases in sequencing data can lead to over/under estimation of expression of certain transcripts and Salmon has some functionality to overcome this. We will use the <code>salmon quant</code> command with the following arguments:</p>
+<p>We can now run Salmon to estimate expression levels of transcripts.
+Biases in sequencing data can lead to over/under estimation of
+expression of certain transcripts and Salmon has some functionality to
+overcome this. We will use the <code>salmon quant</code> command with
+the following arguments:</p>
 <ul>
 <li>i : location of the index files</li>
 <li>r : location of the fq.gz file (use -1,-2 for paired end files)</li>
@@ -971,14 +1349,16 @@ cd ../</code></pre>
 <pre class="bash"><code>mkdir salmon ## Make a folder for salmon output
 cat samples.txt | parallel -j 5 &quot;salmon quant -i annotation/hg38.cdna.ncrna.salmon.index -l SR -r trim_galore/{}_trimmed.fq.gz -p 5 --seqBias --gcBias -o salmon/{}&quot;</code></pre>
 </div>
-<p>The main output of Salmon is a <em>quant.sf</em> file, take a look at one of these files:</p>
+<p>The main output of Salmon is a <em>quant.sf</em> file, take a look at
+one of these files:</p>
 <pre class="bash"><code>less salmon/Control_1/quant.sf</code></pre>
 <p>For each transcript we have five columns:</p>
 <ul>
 <li>The transcript identifier</li>
 <li>The transcript length (in bp)</li>
 <li>The effective length (described in detail below)</li>
-<li>TPM (transcripts per million), which is computed using the effective length</li>
+<li>TPM (transcripts per million), which is computed using the effective
+length</li>
 <li>The estimated read count (‘pseudocount’)</li>
 </ul>
 <br>
@@ -987,7 +1367,13 @@ cat samples.txt | parallel -j 5 &quot;salmon quant -i annotation/hg38.cdna.ncrna
 <i class="far fa-bell"></i> Discussion
 </h2>
 <p>What exactly is the effective length?</p>
-<p>The sequence composition of a transcript affects how many reads are sampled from it. While two transcripts might have identical length, depending on the sequence composition we are more likely to generate fragments from one versus the other. The transcript that has a higer likelihood of being sampled, will end up with the larger effective length. The effective length is thus a corrected transcript length to account for sequence-specific and GC biases.</p>
+<p>The sequence composition of a transcript affects how many reads are
+sampled from it. While two transcripts might have identical length,
+depending on the sequence composition we are more likely to generate
+fragments from one versus the other. The transcript that has a higer
+likelihood of being sampled, will end up with the larger effective
+length. The effective length is thus a corrected transcript length to
+account for sequence-specific and GC biases.</p>
 </div>
 <br>
 <div class="key-points">
@@ -997,7 +1383,8 @@ cat samples.txt | parallel -j 5 &quot;salmon quant -i annotation/hg38.cdna.ncrna
 <div id="section-7" class="section level2">
 <h2></h2>
 <ul>
-<li>Use pseudo-alinger tools like <strong>Salmon</strong> to estimate transcript abundance</li>
+<li>Use pseudo-alinger tools like <strong>Salmon</strong> to estimate
+transcript abundance</li>
 <li>Understand the Salmon output files</li>
 </ul>
 </div>
@@ -1008,10 +1395,13 @@ cat samples.txt | parallel -j 5 &quot;salmon quant -i annotation/hg38.cdna.ncrna
 </div>
 <div id="finish-your-script" class="section level2">
 <h2>10. Finish your script</h2>
-<p>We now have our alignments (BAM), visualisation files (bigWig) and transcript quantification (quant.sf) and this is normally a branching point for downstream analyses.</p>
+<p>We now have our alignments (BAM), visualisation files (bigWig) and
+transcript quantification (quant.sf) and this is normally a branching
+point for downstream analyses.</p>
 <div id="final-reports" class="section level3">
 <h3>Final reports</h3>
-<p>The last thing we want to do is to run <strong>MultiQC</strong> on our folder to compile the reports from Trim_galore, STAR and Salmon:</p>
+<p>The last thing we want to do is to run <strong>MultiQC</strong> on
+our folder to compile the reports from Trim_galore, STAR and Salmon:</p>
 <div class="blue">
 <pre class="bash"><code>multiqc -f</code></pre>
 </div>
@@ -1022,10 +1412,12 @@ cat samples.txt | parallel -j 5 &quot;salmon quant -i annotation/hg38.cdna.ncrna
 </h2>
 <p>Take a look at the multiqc report in your public folder:</p>
 <ul>
-<li>Why are there two different values for % Aligned in the general statistics?</li>
+<li>Why are there two different values for % Aligned in the general
+statistics?</li>
 <li>Are you happy with the % of aligned reads?</li>
 <li>Why does the MOV10 sample have more duplicate reads?</li>
-<li>Look at the ‘Per Base Sequence Content’ plot. What’s going on at the 3’ end?</li>
+<li>Look at the ‘Per Base Sequence Content’ plot. What’s going on at the
+3’ end?</li>
 </ul>
 </div>
 <p><br></p>
@@ -1033,22 +1425,35 @@ cat samples.txt | parallel -j 5 &quot;salmon quant -i annotation/hg38.cdna.ncrna
 </div>
 <div id="running-your-complete-script" class="section level3">
 <h3>Running your complete script</h3>
-<p>Your pipeline.sh script should look something like <a href="http://bifx-core.bio.ed.ac.uk/training/ChIP-seq_workshop/pipeline.sh">this</a> and we can run everything from start to end in one go. This could take….</p>
+<p>Your pipeline.sh script should look something like <a
+href="http://bifx-core.bio.ed.ac.uk/training/ChIP-seq_workshop/pipeline.sh">this</a>
+and we can run everything from start to end in one go. This could
+take….</p>
 <pre class="bash"><code>mkdir RNA-seq_workshop_tmp #Create a temporary directory
 cd  RNA-seq_workshop_tmp #Move into that directory
 cp ../pipeline.sh ../samples.txt . #Copy the pipeline and samples file into the new directory
 ln -s ../annotation . #Link the annotation folder to this new directory
 bash pipeline.sh &gt; pipeline.log &amp; #Run the shell script (See Below)
 cd .. #Move back to the main directory</code></pre>
-<p>We use the unix tool <strong>bash</strong> and the name of our script to run our commands through the shell. We then redirect <strong>&gt;</strong> the output to a log file to keep track of any errors. We use the <strong>&amp;</strong> to run everything in the background to continue using the terminal.</p>
-<p>You can keep track of your pipeline by using <strong>ps</strong> or looking at the log file.</p>
+<p>We use the unix tool <strong>bash</strong> and the name of our script
+to run our commands through the shell. We then redirect
+<strong>&gt;</strong> the output to a log file to keep track of any
+errors. We use the <strong>&amp;</strong> to run everything in the
+background to continue using the terminal.</p>
+<p>You can keep track of your pipeline by using <strong>ps</strong> or
+looking at the log file.</p>
 <pre class="bash"><code>ps f
 tail RNA-seq_workshop_tmp/pipeline.log #Shows the end of a file</code></pre>
 <hr />
 </div>
 <div id="tidy-up" class="section level3">
 <h3>Tidy Up!</h3>
-<p>Files are large and disk space is expensive, remove any unwanted or temporary files from your folder. We should always keep the raw data (fastq) and our final processed datasets (BAM, bigWig, quant.sf etc) as well as the code we used to generate them. Where you can, convert files to compressed or binary formats to save space e.g. fq to fq.gz, SAM to BAM, wig to bigWig.</p>
+<p>Files are large and disk space is expensive, remove any unwanted or
+temporary files from your folder. We should always keep the raw data
+(fastq) and our final processed datasets (BAM, bigWig, quant.sf etc) as
+well as the code we used to generate them. Where you can, convert files
+to compressed or binary formats to save space e.g. fq to fq.gz, SAM to
+BAM, wig to bigWig.</p>
 <div class="blue">
 <pre class="bash"><code>rm trim_galore/*trim*fq.gz #Remove trimmed fastq temporary files
 rm STAR/*/*.wig #Remove wig files once converted to bigWig</code></pre>
@@ -1061,7 +1466,8 @@ rm STAR/*/*.wig #Remove wig files once converted to bigWig</code></pre>
 <div id="section-8" class="section level2">
 <h2></h2>
 <ul>
-<li>Generate report files for your entire analysis with <strong>MultiQC</strong></li>
+<li>Generate report files for your entire analysis with
+<strong>MultiQC</strong></li>
 <li>Save your analysis as a script and run it in one go</li>
 <li>Learn to manage your data</li>
 </ul>
