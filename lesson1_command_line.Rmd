@@ -86,7 +86,7 @@ Please install [IGV](https://software.broadinstitute.org/software/igv/download) 
 
 <br>
 <div class="key-points">
-<h2><i class="fas fa-thumbtack"></i>Key points:</h2>
+<h2><i class="fas fa-thumbtack"></i> Key points:</h2>
 ##
  * Make sure you can log in to the bioinformatics server
  * Create a personal web directory
@@ -172,7 +172,7 @@ zless Control_1.fq.gz | head -n 12
 
 <br>
 <div class="key-points">
-<h2><i class="fas fa-thumbtack"></i>Key points:</h2>
+<h2><i class="fas fa-thumbtack"></i> Key points:</h2>
 ##
  * Create a project directory
  * Link the raw data files to a `fastq` folder
@@ -236,7 +236,7 @@ If we look at the *adapter content* and *over represented sequences* sections we
 
 <br>
 <div class="key-points">
-<h2><i class="fas fa-thumbtack"></i>Key points:</h2>
+<h2><i class="fas fa-thumbtack"></i> Key points:</h2>
 ##
  * Generate QC reports with fastq_screen, fastQC and multiqc
  * Learn to assess and perform quality control of raw reads
@@ -424,7 +424,7 @@ It may be worth looking into a few other tools for quality control of RNA-seq da
 
 <br>
 <div class="key-points">
-<h2><i class="fas fa-thumbtack"></i>Key points:</h2>
+<h2><i class="fas fa-thumbtack"></i> Key points:</h2>
 ##
  * Check for contaminants
  * Assess sequence quality
@@ -557,7 +557,7 @@ The third column represents the number of alignments.
 <br>
 
 <div class="key-points">
-<h2><i class="fas fa-thumbtack"></i>Key points:</h2>
+<h2><i class="fas fa-thumbtack"></i> Key points:</h2>
 ##
  * Align reads to a reference genome with STAR
  * Understand the SAM file format
@@ -642,7 +642,7 @@ In some cases you may wish to remove reads that align to specific regions of the
 
 <br>
 <div class="key-points">
-<h2><i class="fas fa-thumbtack"></i>Key points:</h2>
+<h2><i class="fas fa-thumbtack"></i> Key points:</h2>
 ##
  * Use samtools to summarise and filter your alignments
  * Consider filtering your BAM files
@@ -683,12 +683,35 @@ cat samples.txt | parallel -j 6 "wigToBigWig STAR/{}.Signal.Unique.str1.out.wig 
 
 ### RNA-seq normalisation
 
-TPM, RPM, 
-which are normalised to read depth (RPM = Reads per million bases)
+**Normalisation** is the process of correcting read coverage levels in order to compare expression levels between genes and different samples. Normalisation methods need to account for several factors in RNA-seq data:
 
-If you would like to create *bigWig* files directly from BAM files, e.g. after filtering or from other aligners, we recommend using [deepTools bamCoverage](https://deeptools.readthedocs.io). **bamCoverage** has lots of options for filtering, smoothing and normalising read coverage profiles.
+* **Sequencing depth** - Total number of sequenced reads differs between samples
+* **Gene length** - Longer genes will have more reads than shorter genes expressed at the same level
+* **RNA composition** - The presence of a few highly differentially expressed genes can skew normalisation between samples. This is especially important in differential expression analysis.
 
-Some analysis pipelines use [genomeCoverageBed](https://bedtools.readthedocs.io/en/latest/content/tools/genomecov.html) but be aware that this may not output normalised values.
+Several [RNA-seq normalisation strategies](https://hbctraining.github.io/DGE_workshop_salmon_online/lessons/02_DGE_count_normalization.html) exist:
+
+* **RPM** - Reads per million mapped reads (sequence depth correction)
+* **RPKM/FPKM** - Reads/fragments per kilobase per million mapped reads (sequence depth and gene length correction)
+* **TPM** - Transcripts per million (sequence depth and gene length correction)
+
+You may have noticed that we used **RPM** normalisation to create our wiggle files earlier. This is the only option in STAR and is fine for visual QC of your data. 
+
+Of the options above, **TPM** normalisation is most suitable for comparing expression levels between genes and between samples. If you plan to perform comparitive analysis on aligned data, we recommend using [deepTools bamCoverage](https://deeptools.readthedocs.io), which can generate TPM normalised bigWig files from BAM files. The `bamCoverage` tool also has several options for filtering, smoothing and normalising read coverage profiles.
+
+Some analysis pipelines use [genomeCoverageBed](https://bedtools.readthedocs.io/en/latest/content/tools/genomecov.html) but be aware this does not output normalised values unless scaling factors are supplied explicitly.
+
+None of these normalisation strategies are appropriate for **differential expression** analysis with gene count data. You will see later on that differential expression packages employ their own normalisation methods to handle sequencing depth and RNA composition.
+
+<br>
+<div class="resources">
+<h2><i class="fas fa-book"></i> Further Learning</h2>
+More on RNA-seq normalisation:
+
+* An overview of [normalisation methods](https://hbctraining.github.io/DGE_workshop_salmon_online/lessons/02_DGE_count_normalization.html)
+* [TPM vs RPKM](https://www.rna-seqblog.com/rpkm-fpkm-and-tpm-clearly-explained/)
+</div>
+<br>
 
 ----
 
@@ -774,7 +797,7 @@ We recommend IGV as it allows you to quickly explore your data. Several other ge
 
 <br>
 <div class="key-points">
-<h2><i class="fas fa-thumbtack"></i>Key points:</h2>
+<h2><i class="fas fa-thumbtack"></i> Key points:</h2>
 ##
  * Convert BAM files to bigWig for read coverage visualisation
  * Consider how to normalise read coverage profiles
@@ -869,7 +892,7 @@ The sequence composition of a transcript affects how many reads are sampled from
 
 <br>
 <div class="key-points">
-<h2><i class="fas fa-thumbtack"></i>Key points:</h2>
+<h2><i class="fas fa-thumbtack"></i> Key points:</h2>
 ##
  * Use pseudo-aligner tools like **Salmon** to estimate transcript abundance
  * Understand the Salmon output files
@@ -1014,7 +1037,7 @@ This will take several minutes to run so it's best to set it running then take a
 
 <br>
 <div class="key-points">
-<h2><i class="fas fa-thumbtack"></i>Key points:</h2>
+<h2><i class="fas fa-thumbtack"></i> Key points:</h2>
 ##
  * Generate report files for your entire analysis with **MultiQC**
  * Save your analysis as a script and run it in one go
