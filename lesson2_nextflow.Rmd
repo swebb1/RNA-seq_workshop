@@ -254,9 +254,7 @@ OWT
 You can also override the default parameters using command line options with the names of the parameters, as follows:
 
 ```bash
-[USERNAME]@bifx-core3:~/RNA-seq_workshop/nextflow_example$ rm -r ./*
-[USERNAME]@bifx-core3:~/RNA-seq_workshop/nextflow_example$ echo one > one.txt
-[USERNAME]@bifx-core3:~/RNA-seq_workshop/nextflow_example$ echo two > two.txt
+[USERNAME]@bifx-core3:~/RNA-seq_workshop/nextflow_example$ rm -r ./results
 [USERNAME]@bifx-core3:~/RNA-seq_workshop/nextflow_example$ nextflow run simple-pipeline.nf --in one.txt
 
 N E X T F L O W  ~  version 21.10.6
