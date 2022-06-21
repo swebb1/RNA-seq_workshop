@@ -523,12 +523,12 @@ The help text tells us that we need to create a samplesheet in csv format. Full 
 
 ```csv
 sample,fastq_1,fastq_2,strandedness
-Control_1,Control_1.fq.gz,,forward
-Control_2,Control_2.fq.gz,,forward
-Control_3,Control_3.fq.gz,,forward
-MOV10_OE_1,MOV10_OE_1.fq.gz,,forward
-MOV10_OE_2,MOV10_OE_2.fq.gz,,forward
-MOV10_OE_3,MOV10_OE_3.fq.gz,,forward
+Control_1,Control_1.fq.gz,,reverse
+Control_2,Control_2.fq.gz,,reverse
+Control_3,Control_3.fq.gz,,reverse
+MOV10_OE_1,MOV10_OE_1.fq.gz,,reverse
+MOV10_OE_2,MOV10_OE_2.fq.gz,,reverse
+MOV10_OE_3,MOV10_OE_3.fq.gz,,reverse
 ```
 
 In order to run the *nf-core* RNA-Seq workflow, we need to specify the following:
@@ -548,12 +548,12 @@ As an example, we can run the pseudo-alignment steps of the pipeline, correspond
 [USERNAME]@bifx-core3:~/RNA-seq_workshop/nfcore_rnaseq_example$ ls ../fastq/*.fq.gz | xargs -I {} ln -s {}
 [USERNAME]@bifx-core3:~/RNA-seq_workshop/nfcore_rnaseq_example$ cat >> samplesheet.csv
 sample,fastq_1,fastq_2,strandedness
-Control_1,Control_1.fq.gz,,forward
-Control_2,Control_2.fq.gz,,forward
-Control_3,Control_3.fq.gz,,forward
-MOV10_OE_1,MOV10_OE_1.fq.gz,,forward
-MOV10_OE_2,MOV10_OE_2.fq.gz,,forward
-MOV10_OE_3,MOV10_OE_3.fq.gz,,forward
+Control_1,Control_1.fq.gz,,reverse
+Control_2,Control_2.fq.gz,,reverse
+Control_3,Control_3.fq.gz,,reverse
+MOV10_OE_1,MOV10_OE_1.fq.gz,,reverse
+MOV10_OE_2,MOV10_OE_2.fq.gz,,reverse
+MOV10_OE_3,MOV10_OE_3.fq.gz,,reverse
 <Ctrl+D>
 [USERNAME]@bifx-core3:~/RNA-seq_workshop/nfcore_rnaseq_example$ nextflow run -r 3.8.1 nf-core/rnaseq -profile singularity --outdir nfcore_rnaseq_pseudoalignment --input samplesheet.csv --skip_alignment --pseudo_aligner salmon --salmon_index annotation/hg38.cdna.ncrna.salmon.index/ --fasta annotation/Homo_sapiens.GRCh38.dna.primary_assembly.fa --gtf annotation/Homo_sapiens.GRCh38.106.gtf
 
@@ -576,6 +576,10 @@ Launching `nf-core/rnaseq` [curious_mercator] - revision: 89bf536ce4 [3.8.1]
 This command uses the *skip_alignment* parameter along with the *pseudo_aligner salmon* option to tell nextflow to run pseudo-alignment only. A complete guide to the available parameters for the pipeline can be found [here](https://nf-co.re/rnaseq/3.8.1/parameters).
 
 As was the case for the example *nextflow* pipeline discussed in the previous section, the pipeline generates a *work* directory containing the working directories for the processes, and publishes the results of the analysis to the directory specified using the *outdir* parameter (in our case *nfcore_rnaseq_pseudoalignment*).
+
+Once complete, you can view the output in the output directory `nfcore_rnaseq_pseudoalignment`, including a **MultiQC** summary of all of the tools we have run.
+
+You can view a MultiQC report from the full size dataset [here](https://bifx-core3.bio.ed.ac.uk/training/RNA-seq_analysis/nextflow_full/results_ensembl/multiqc/star_salmon/multiqc_report.html).
 
 <br>
 <div class="key-points">
