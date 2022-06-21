@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Automating your RNA-seq analysis with Nextflow</title>
+
+<script src="site_libs/header-attrs-2.14/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/yeti.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
+<script src="site_libs/pagedtable-1.1/js/pagedtable.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.tab('show');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">RNA-seq Analysis Workshop</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="lesson1_command_line.html">Command line analysis</a>
+</li>
+<li>
+  <a href="lesson2_nextflow.html">Automated analysis with NextFlow</a>
+</li>
+<li>
+  <a href="lesson3_deseq.html">Differential expression</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Automating your RNA-seq analysis with
+Nextflow</h1>
+
+</div>
+
+<div id="TOC">
+<ul>
+<li><a href="#workflow-management-systems">1. Workflow management
+systems</a></li>
+<li><a href="#how-nextflow-works">2. How nextflow works</a></li>
+<li><a href="#using-nextflow">3. Using nextflow</a></li>
+<li><a href="#the-nf-core-rna-seq-pipeline">4. The nf-core RNA-Seq
+pipeline</a></li>
+</ul>
+</div>
+
+<head>
+<script src="https://kit.fontawesome.com/ece750edd7.js" crossorigin="anonymous"></script>
+</head>
+<br>
+<div class="objectives">
+<h2>
+<i class="far fa-check-square"></i>Learning Objectives
+</h2>
+<ul>
+<li>Understand the benefits of using a workflow system such as
+nextflow</li>
+<li>Build and run a custom nextflow workflow</li>
+<li>Explore the nf-core collection of custom nextflow workflows</li>
+<li>Run the nf-core RNA-Seq workflow and view the results</li>
+</ul>
+</div>
+<p><br></p>
+<hr />
+<div id="workflow-management-systems" class="section level2">
+<h2>1. Workflow management systems</h2>
+<p>In the previous session we went through an RNA-Seq analysis pipeline,
+covering pre-processing, QC, alignment to a reference genome, and
+transcript quantification. At the end of the session we pulled all of
+the commands together into a script called <em>pipeline.sh</em>, which
+allows you to run the analysis using a single command.</p>
+<p>In this session we will explore <a
+href="https://nextflow.io/">nextflow</a>, a dedicated workflow
+management system, which provides a wide range of useful features that
+would require additional effort to implement using shell scripts. These
+include:</p>
+<ul>
+<li><strong>Ability to orchestrate processes:</strong> In
+<em>pipeline.sh</em> we had to use GNU parallel to tell our system to
+run commands in parallel. This is not necessary when we use a tool such
+as <em>nextflow</em>, which has the ability to work out how to run the
+analysis steps most efficiently on a given platform</li>
+<li><strong>Re-entrancy:</strong> By default, whenever you run
+<em>pipeline.sh</em> it will run all of the commands in the pipeline
+from scratch. This can extremely inefficient if you only need to re-run
+one of the later steps. Tools such as <em>nextflow</em> can work out
+which steps need to be re-run, and skip the others</li>
+<li><strong>Flexibility:</strong> Tools such as <em>nextflow</em>
+provide many options for specifying parameters, and for managing the
+software used in the individual steps, making it easier to re-use the
+pipeline for different analyses, or on different platforms</li>
+</ul>
+<br>
+<div class="discussion">
+<h2>
+<i class="far fa-bell"></i> Discussion
+</h2>
+<p>How could you achieve re-entrancy using scripts? What are the
+potential challenges and risks of doing this?</p>
+</div>
+<p><br></p>
+<hr />
+</div>
+<div id="how-nextflow-works" class="section level2">
+<h2>2. How nextflow works</h2>
+<p><em>nextflow</em> provides a high level domain specific language
+(DSL), built on top of the programming language <a
+href="https://groovy-lang.org/">groovy</a>, which allows you to specify
+workflows using an intuitive, high level syntax that abstracts away much
+of the low level plumbing that you would have to take care of using
+scripts. There are actually two versions of the <em>nextflow</em> DSL,
+which work slightly different. Modern <em>nextflow</em> pipelines use
+the new version, referred to as <em>DSL2</em>. Pipelines written using
+<em>nextflow</em> are executed using the <em>nextflow</em> workflow
+engine, which orchestrates and runs the pipeline steps.</p>
+<p><em>nextflow</em> uses the <em>dataflow programming</em> paradigm, in
+which individual steps (referred to as <em>processes</em>) are connected
+to each other using <em>channels</em>, and data flows between the
+processes through the channels. This is a powerful concept, and is used
+in a number of other contexts, for example:</p>
+<ul>
+<li>In <em>bash</em> scripts, programs can be connected together using
+<em>pipes</em>. The data output by the first program flows into the
+input of the next through the pipes</li>
+<li>In spreadsheets, formulas are often used to calculate the value in
+one cell based on the value in another. When the value in a cell is
+updated, the data in the cell flows through to all of the cells that
+reference it, and they also update their values</li>
+</ul>
+<br>
+<div class="key-points">
+<h2>
+<i class="fas fa-thumbtack"></i>Key points:
+</h2>
+<div id="section" class="section level2">
+<h2></h2>
+<ul>
+<li>Specialised workflow tools such as nextflow provide a simple way of
+specifying pipelines, and provide a wide range of useful features</li>
+<li>Nextflow is a powerful and popular workflow tool that uses a
+dataflow model, where analysis steps are specified as individual
+processes that are connected using channels</li>
+</ul>
+</div>
+</div>
+<p><br></p>
+<hr />
+</div>
+<div id="using-nextflow" class="section level2">
+<h2>3. Using nextflow</h2>
+<p>In this section we will demonstrate how to install <em>nextflow</em>,
+and how to build and run a simple <em>nextflow</em> workflow.</p>
+<div id="installing-nextflow" class="section level3">
+<h3>Installing nextflow</h3>
+<p><em>nextflow</em> can be installed on any POSIX compatible system,
+such as Linux or Mac OS, or on Windows using <a
+href="https://docs.microsoft.com/en-us/windows/wsl/about">WSL</a>.
+<em>Nextflow</em> is already installed on the WCB servers, but if you
+would like to install it on another system <em>nextflow</em> provides a
+command line installer, which can be run using the following
+command:</p>
+<pre class="bash"><code>$ curl -fsSL get.nextflow.io | bash</code></pre>
+<p><em>Note: You will need a recent version of <a
+href="https://www.java.com">Java</a> to be installed on your system
+before running this command.</em></p>
+<p>Alternatively, if you have <a
+href="https://conda.io/projects/conda/en/latest/">conda</a> installed
+you can also use it to install <em>nextflow</em> along with its
+dependencies into a conda environment.</p>
+<br>
+<div class="resources">
+<h2>
+<i class="fas fa-book"></i> Further Learning
+</h2>
+<p>A detailed guide on how to install and get started with nextflow can
+be found <a
+href="https://www.nextflow.io/docs/latest/getstarted.html">here</a>.</p>
+</div>
+<p><br></p>
+<hr />
+</div>
+<div id="writing-nextflow-scripts" class="section level3">
+<h3>Writing nextflow scripts</h3>
+<p>In this section we will look at a toy <em>nextflow</em> pipeline that
+illustrates some of the basic concepts of <em>nextflow</em>, in
+particular how the processes and channels that make up the workflow are
+specified, how parameters are handled, and how to run the pipeline and
+understand the output.</p>
+<p>The following script, which I’ve called <em>simple-pipeline.nf</em>
+takes a collection of input files, each with the prefix <em>input_</em>,
+and performs two steps:</p>
+<ul>
+<li>Capitalise the string, and save it to a file ending in
+<em>.caps.txt</em></li>
+<li>Reverse the capitalised string, and save it to a file ending in
+<em>.rev.caps.txt</em></li>
+</ul>
+<pre class="groovy"><code>
+#!/usr/bin/env nextflow
+
+// We need to specify that we&#39;re using DSL2 here
+nextflow.enable.dsl=2
+
+// These are the default values for the parameters, which can be accessed from inside the 
+// process blocks. Globs can be used in these definitions to specify multiple files.
+params.in = &quot;*.txt&quot;
+params.publishDir = &quot;results&quot;
+
+/*
+ * The following process blocks define the pipeline steps
+ */
+
+// Capitalise the text in the input file
+process CAPITALISE {
+
+    // This directive tells nextflow to publish the files generated by this process that match the
+    // specified pattern to params.publishDir.
+    // It also contains a &#39;saveAs&#39; parameter, which uses the groovy replaceAll method to perform a
+    // regex substitution on the output file names. This can be useful to avoid name conflicts.
+    publishDir (
+        path: &quot;${params.publishDir}&quot;,
+        pattern: &quot;*.caps.txt&quot;,
+        saveAs: { filename -&gt; filename.replaceAll(/.txt.caps.txt$/, &quot;.caps.txt&quot;) },
+        mode: &#39;copy&#39;
+    )
+
+    // This is where tell nextflow the type if data that we expect in the input channel, and
+    // which name we want to use for it
+    input:
+    path x
+
+    // This tells nextflow that we only want to put paths whose names match the glob &quot;*.caps.txt&quot;
+    // into the output channel
+    output:
+    path &quot;*.caps.txt&quot;
+
+    // This is the shell block, where we put the actual command to run.
+    // When we use a shell directive we can use both nextflow parameters and shell variables.
+    // nextflow parameters are specified using the !{x} syntax, and shell variables (not used here)
+    // would use $x.
+    shell:
+    &quot;&quot;&quot;
+    cat !{x} | tr &#39;[:lower:]&#39; &#39;[:upper:]&#39; &gt; !{x}.caps.txt 
+    &quot;&quot;&quot;
+}
+
+// Reverse the text in the input file
+process REVERSE {
+ 
+    publishDir (
+        path: &quot;${params.publishDir}&quot;,
+        pattern: &quot;*.rev.txt&quot;,
+        saveAs: {
+            filename -&gt; filename.replaceAll(/.txt.caps.txt.rev.txt$/, &quot;.caps.rev.txt&quot;)
+        },
+        mode: &#39;copy&#39;
+    )
+
+    input:
+    path x
+ 
+    output:
+    path &quot;*.rev.txt&quot;
+
+    shell:
+    &quot;&quot;&quot;
+    cat !{x} | rev &gt; !{x}.rev.txt 
+    &quot;&quot;&quot;
+}
+
+/*
+ * The following workflow block defines how to link the processes together with channels
+ */
+workflow {
+
+    // first we define a channel called input_ch
+    input_ch = Channel.fromPath(params.in)
+    
+    // then we define a channel called caps_ch as the output channel of the CAPITALISE process, 
+    // with input_ch its input channel 
+    caps_ch = CAPITALISE(input_ch)
+    
+    // then we call the REVERSE process, with caps_ch as its input channel
+    REVERSE(caps_ch)
+    
+}
+</code></pre>
+<br>
+<div class="challenge">
+<h2>
+<i class="fas fa-pencil-alt"></i> Challenge:
+</h2>
+How would you change the script so that it generates the reverse of the
+original input files rather than the capitalised files?
+<details>
+<summary>
+Solution
+</summary>
+<div class="solution">
+<h2>
+<i class="far fa-eye"></i>
+</h2>
+<p>Replace <em>REVERSE(caps_ch)</em> with <em>REVERSE(input_ch)</em> in
+the workflow block, and update saveAs in the publishDir directive for
+the REVERSE process.</p>
+</div>
+</details>
+</div>
+<p><br></p>
+<hr />
+</div>
+<div id="running-nextflow-scripts" class="section level3">
+<h3>Running nextflow scripts</h3>
+<p>You can run a <em>nextflow</em> script using the <em>nextflow
+run</em> command:</p>
+<pre class="bash"><code>
+[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop$ mkdir nextflow_example; cd nextflow_example
+[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$ echo one &gt; one.txt
+[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$ echo two &gt; two.txt
+[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$ cat &gt;&gt; simple-pipeline.nf
+
+&lt;paste the pipeline code shown above here, then type Ctrl+D&gt;
+
+[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$ nextflow run simple-pipeline.nf
+
+N E X T F L O W  ~  version 21.10.6
+Launching `simple-pipeline.nf` [jovial_gates] - revision: 601a9c8121
+executor &gt;  local (4)
+[0a/bac795] process &gt; CAPITALISE (2) [100%] 2 of 2 ✔
+[f5/620bae] process &gt; REVERSE (2)    [100%] 2 of 2 ✔
+
+[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$ head results/*
+
+==&gt; results/one.caps.txt &lt;==
+ONE
+
+==&gt; results/one.caps.rev.txt &lt;==
+ENO
+
+==&gt; results/two.caps.txt &lt;==
+TWO
+
+==&gt; results/two.caps.rev.txt &lt;==
+OWT
+
+[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$
+</code></pre>
+<p>You can also override the default parameters using command line
+options with the names of the parameters, as follows:</p>
+<pre class="bash"><code>[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$ rm -r ./*
+[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$ echo one &gt; one.txt
+[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$ echo two &gt; two.txt
+[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$ nextflow run simple-pipeline.nf --in one.txt
+
+N E X T F L O W  ~  version 21.10.6
+Launching `simple-pipeline.nf` [awesome_meitner] - revision: 601a9c8121
+executor &gt;  local (2)
+[ee/1526ca] process &gt; CAPITALISE (1) [100%] 1 of 1 ✔
+[57/22dbd1] process &gt; REVERSE (1)    [100%] 1 of 1 ✔
+
+[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$ head results/*
+
+
+==&gt; results/one.caps.txt &lt;==
+ONE
+
+==&gt; results/one.caps.rev.txt &lt;==
+ENO
+
+[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$</code></pre>
+<p>In the above example the default value for <em>params.in</em>,
+“*.txt”, was replaced by “one.txt”, causing only that input file to be
+processed.</p>
+<hr />
+</div>
+<div id="resuming-nextflow-scripts" class="section level3">
+<h3>Resuming nextflow scripts</h3>
+<p>One of the most useful features of workflow tools such as
+<em>nextflow</em> is re-entrancy, which allows you to resume an
+incomplete pipeline rather than having to re-run it from scratch.
+<em>nextflow</em> allows you to do this using the <em>-resume</em> flag.
+In the following example I will modify <em>simple-pipeline.nf</em> to
+create a broken pipeline in which the REVERSE process fails. Running
+this workflow will result in incomplete output. I will then fix the
+broken pipeline, and use the <em>-resume</em> flag to resume it without
+re-running the CAPITALISE process:</p>
+<pre class="bash"><code>[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$ sed &#39;s/ rev / broken_rev /&#39; simple-pipeline.nf &gt; broken-pipeline.nf  # this effectively breaks the rev command, resulting in a pipeline that will fail
+
+[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$ nextflow run broken-pipeline.nf
+
+N E X T F L O W  ~  version 21.10.6
+Launching `broken-pipeline.nf` [determined_miescher] - revision: 01340331bc
+executor &gt;  local (4)
+[f3/db9f35] process &gt; CAPITALISE (2) [100%] 2 of 2 ✔
+[f1/c46e02] process &gt; REVERSE (2)    [  0%] 0 of 2
+executor &gt;  local (4)
+[f3/db9f35] process &gt; CAPITALISE (2) [100%] 2 of 2 ✔
+[f1/c46e02] process &gt; REVERSE (2)    [100%] 1 of 1, failed: 1
+Error executing process &gt; &#39;REVERSE (1)&#39;
+
+Caused by:
+  Process `REVERSE (1)` terminated with an error exit status (127)
+
+Command executed:
+
+  cat two.txt.caps.txt | broken_rev &gt; two.txt.caps.txt.rev.txt
+
+Command exit status:
+  127
+
+Command output:
+  (empty)
+
+Command error:
+  .command.sh: line 2: broken_rev: command not found
+
+Work dir:
+  work/5e/7807d71da3f91caca9699667291c84
+
+Tip: you can try to figure out whats wrong by changing to the process work dir and showing the script file named `.command.sh`
+
+[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$ sed --in-place &#39;s/ broken_rev / rev /&#39; broken-pipeline.nf  # this fixes the rev command in broken-pipeline.nf
+
+[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$ nextflow run broken-pipeline.nf -resume
+
+N E X T F L O W  ~  version 21.10.6
+Launching `broken-pipeline.nf` [soggy_shaw] - revision: 601a9c8121
+executor &gt;  local (2)
+[f3/db9f35] process &gt; CAPITALISE (1) [100%] 2 of 2, cached: 2 ✔
+[e5/5494dc] process &gt; REVERSE (1)    [100%] 2 of 2 ✔
+
+[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$ rm broken-pipeline.nf
+[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$ </code></pre>
+<p>In the above, example, fixing the pipeline and specifying the
+<em>-resume</em> flag resulted in the pipeline using the existing
+outputs of the CAPITALISE process cached in the work directory, as
+indicated by <em>cached: 2</em> in the output log.</p>
+<hr />
+</div>
+<div id="understanding-the-output-of-nextflow-workflows"
+class="section level3">
+<h3>Understanding the output of nextflow workflows</h3>
+<p>Now that we have run our <em>nextflow</em> pipeline, we can view the
+results using the <em>tree</em> command.</p>
+<pre class="bash"><code>[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$ tree -a
+
+.
+├── .nextflow
+│   ├── cache
+│   │   └── 4be8d787-a695-4ad3-81a2-031be0e01dd2
+│   │       ├── db
+│   │       │   ├── 000005.sst
+│   │       │   ├── 000010.log
+│   │       │   ├── CURRENT
+│   │       │   ├── LOCK
+│   │       │   └── MANIFEST-000009
+│   │       └── index.soggy_shaw
+│   ├── history
+│   ├── .nextflow
+│   └── plr
+├── .nextflow.log
+├── one.txt
+├── results
+│   ├── one.caps.rev.txt
+│   ├── one.caps.txt
+│   ├── two.caps.rev.txt
+│   └── two.caps.txt
+├── simple-pipeline.nf
+├── two.txt
+└── work
+    ├── 11
+    │   └── 10334377a00b5c93e955a0ea18df6f
+    │       ├── .command.begin
+    │       ├── .command.err
+    │       ├── .command.log
+    │       ├── .command.out
+    │       ├── .command.run
+    │       ├── .command.sh
+    │       ├── .exitcode
+    │       ├── one.txt -&gt; ../../../one.txt
+    │       └── one.txt.caps.txt
+    ├── 58
+    │   └── 1280a821d821576e6fa3ff699feefb
+    │       ├── .command.begin
+    │       ├── .command.err
+    │       ├── .command.log
+    │       ├── .command.out
+    │       ├── .command.run
+    │       ├── .command.sh
+    │       ├── .exitcode
+    │       ├── one.txt.caps.txt -&gt; ../../11/10334377a00b5c93e955a0ea18df6f/one.txt.caps.txt
+    │       └── one.txt.caps.txt.rev.txt
+    ├── 9e
+    │   └── b7c925ff9caa0b1b0f274b2683e1e3
+    │       ├── .command.begin
+    │       ├── .command.err
+    │       ├── .command.log
+    │       ├── .command.out
+    │       ├── .command.run
+    │       ├── .command.sh
+    │       ├── .exitcode
+    │       ├── two.txt -&gt; ../../../two.txt
+    │       └── two.txt.caps.txt
+    └── ce
+        └── 3449bf6fc1bb467fba1284916f4f9d
+            ├── .command.begin
+            ├── .command.err
+            ├── .command.log
+            ├── .command.out
+            ├── .command.run
+            ├── .command.sh
+            ├── .exitcode
+            ├── two.txt.caps.txt -&gt; ../../9e/b7c925ff9caa0b1b0f274b2683e1e3/two.txt.caps.txt
+            └── two.txt.caps.txt.rev.txt</code></pre>
+<p>In the above output we can see the following:</p>
+<ul>
+<li>Our <em>simple-pipeline.nf</em> nextflow script</li>
+<li>Our input files, <em>one.txt</em> and <em>two.txt</em></li>
+<li>The <em>results</em> directory, which contains the published
+results</li>
+<li>The <em>work</em> directory, which contains a subdirectory for each
+process</li>
+<li>The <em>.nextflow.log</em> file, and the <em>.nextflow</em>
+directory, which are used to store the history of past runs of the
+pipeline, and ensure that a pipeline run cannot be started again while a
+previous run is in progress</li>
+</ul>
+<p>By creating a specialised directory for each process,
+<em>nextflow</em> isolates the outputs of the different processes, and
+reduces the risk of name conflicts. Each process directory within the
+<em>work</em> directory includes the following:</p>
+<ul>
+<li>The output files generated by the process</li>
+<li>Symbolic links to the input files for the process</li>
+<li>The shell script that was run as part of the process, in
+<em>.command.sh</em></li>
+<li>A log of the exit code of the command if it failed, in
+<em>.exitcode</em></li>
+<li>A log of the standard output and standard error of the commands that
+were run (in <em>.command.log</em> and <em>.command.err</em>
+respectively</li>
+<li>Some internal shell code required for the shell script to run
+successfully on different platforms (in <em>.command.run</em>)</li>
+</ul>
+<p>Many of these files can be useful for debugging broken scripts. The
+presence of the <em>work</em> directory is also useful for tidying up,
+since if the required results have been published to an output directory
+(using <em>mode: ‘copy’</em> in the <em>publishDir</em> directive), it
+can be deleted to save space.</p>
+<br>
+<div class="challenge">
+<h2>
+<i class="fas fa-pencil-alt"></i> Challenge:
+</h2>
+Can you work out which subdirectory of <em>work</em> corresponds to
+which process?
+<details>
+<summary>
+Solution
+</summary>
+<div class="solution">
+<h2>
+<i class="far fa-eye"></i>
+</h2>
+<p>There are a few ways to do this. You could list the commands that
+were run in each directory as follows:</p>
+<pre class="bash"><code>[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$ find work -name .command.sh -exec bash -c &quot;echo {}&#39;: &#39;; cat {}&quot; \; </code></pre>
+<p>You could also use <em>nextflow log</em>, specifying the name of the
+run:</p>
+<pre class="bash"><code>[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$ nextflow log soggy_shaw -f process,workdir</code></pre>
+</div>
+</details>
+</div>
+<p><br></p>
+<div class="resources">
+<h2>
+<i class="fas fa-book"></i> Further Learning
+</h2>
+<p>Nextflow is a complex and feature rich workflow language, and we have
+only provided a brief introduction here. For a more in depth
+introduction to nextflow, see <a
+href="https://ggrimes.github.io/workflows-nextflow/">this course</a>. To
+see an example of a simple but more realistic RNA-Seq pipeline, look at
+the docs <a href="https://nextflow.io/example4.html">here</a></p>
+</div>
+<p><br></p>
+<div class="key-points">
+<h2>
+<i class="fas fa-thumbtack"></i>Key points:
+</h2>
+<div id="section-1" class="section level2">
+<h2></h2>
+<ul>
+<li>Nextflow can be installed on POSIX based systems, or Windows with
+WSL, via the command line installer, or via conda</li>
+<li>Nextflow workflows are written in a high level domain specific
+language, containing <em>process</em> blocks that specify different
+processes, and a <em>workflow</em> block where you specify how to
+connect the processes together</li>
+<li>Nextflow pipelines provide a number of options for specifying
+parameters, and provide support for re-entrancy using the
+<em>-resume</em> flag</li>
+</ul>
+</div>
+</div>
+<p><br></p>
+<hr />
+</div>
+</div>
+<div id="the-nf-core-rna-seq-pipeline" class="section level2">
+<h2>4. The nf-core RNA-Seq pipeline</h2>
+<p>One of the easiest ways to perform an NGS analysis can to use a
+pre-existing pipeline. A good example of a high quality, flexible, and
+well maintained pre-built <em>nextflow</em> pipeline for RNA-Seq
+analysis is provided by <a href="https://nf-co.re/">nf-core</a>.</p>
+<p>This pipeline can be configured to run a wide range of tools,
+including many of those we used in the previous session. The range of
+possible workflows that the <em>nf-core</em> pipeline covers is shown in
+the following image, taken from the <a
+href="https://nf-co.re/rnaseq">nf-core pipeline documentation</a>:</p>
+<p><img src="images/nf-core-rnaseq_metro_map_grey.png" width=1200></p>
+<hr />
+<div id="running-the-pipeline" class="section level3">
+<h3>Running the pipeline</h3>
+<p>We can view the help text for the <em>nf-core</em> RNA-Seq pipeline
+as follows:</p>
+<pre class="bash"><code>$ nextflow run -r 3.8.1 nf-core/rnaseq --help
+
+N E X T F L O W  ~  version 21.10.6
+Launching `nf-core/rnaseq` [special_babbage] - revision: 89bf536ce4 [3.8.1]
+
+
+------------------------------------------------------
+                                        ,--./,-.
+        ___     __   __   __   ___     /,-._.--~&#39;
+  |\ | |__  __ /  ` /  \ |__) |__         }  {
+  | \| |       \__, \__/ |  \ |___     \`-._,-`-,
+                                        `._,._,&#39;
+  nf-core/rnaseq v3.8.1
+------------------------------------------------------
+Typical pipeline command:
+
+  nextflow run nf-core/rnaseq --input samplesheet.csv --outdir &lt;OUTDIR&gt; --genome GRCh37 -profile docker
+
+Input/output options
+  --input                      [string]  Path to comma-separated file containing information about the samples in the experiment.
+  --outdir                     [string]  The output directory where the results will be saved. You have to use absolute paths to storage on Cloud
+                                         infrastructure.
+  --email                      [string]  Email address for completion summary.
+  --multiqc_title              [string]  MultiQC report title. Printed as page header, used for filename if not otherwise specified.
+  --save_merged_fastq          [boolean] Save FastQ files after merging re-sequenced libraries in the results directory.
+  ...</code></pre>
+<p>The help text tells us that we need to create a samplesheet in csv
+format. Full instructions on how to build a samplesheet are provided <a
+href="https://nf-co.re/rnaseq/3.8.1/usage">here</a>. The samplesheet for
+the example analysis that we are using looks like this:</p>
+<pre class="csv"><code>sample,fastq_1,fastq_2,strandedness
+Control_1,Control_1.fq.gz,,forward
+Control_2,Control_2.fq.gz,,forward
+Control_3,Control_3.fq.gz,,forward
+MOV10_OE_1,MOV10_OE_1.fq.gz,,forward
+MOV10_OE_2,MOV10_OE_2.fq.gz,,forward
+MOV10_OE_3,MOV10_OE_3.fq.gz,,forward</code></pre>
+<p>In order to run the <em>nf-core</em> RNA-Seq workflow, we need to
+specify the following:</p>
+<ul>
+<li>The samplesheet, as shown above</li>
+<li>The output directory, where the results of the analysis will be
+saved</li>
+<li>The <em>profile</em> that we would like to use. This determines how
+the pipeline will find and the software used to perform the analysis.
+The best practice recommendation is to use <em>singularity</em> or
+<em>Docker</em> containers, however <em>conda</em> is also supported. In
+each case the selected tool must be installed prior to running the
+pipeline</li>
+<li>the locations of the relevant reference files, or the genome to be
+used if you would like to use iGenomes hosted online</li>
+<li>A specification of the pipeline steps you would like to run</li>
+</ul>
+<p>As an example, we can run the pseudo-alignment steps of the pipeline,
+corresponding to the pink route in the image above. We will use the
+annotation files from the previous session.</p>
+<pre class="bash"><code>[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$ cd ..
+[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop$ mkdir nfcore_rnaseq_example; cd nfcore_rnaseq_example
+[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nfcore_rnaseq_example$ ln -s ../annotation
+[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nfcore_rnaseq_example$ ls ../fastq/*.fq.gz | xargs -I {} ln -s {}
+[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nfcore_rnaseq_example$ cat &gt;&gt; samplesheet.csv
+sample,fastq_1,fastq_2,strandedness
+Control_1,Control_1.fq.gz,,forward
+Control_2,Control_2.fq.gz,,forward
+Control_3,Control_3.fq.gz,,forward
+MOV10_OE_1,MOV10_OE_1.fq.gz,,forward
+MOV10_OE_2,MOV10_OE_2.fq.gz,,forward
+MOV10_OE_3,MOV10_OE_3.fq.gz,,forward
+&lt;Ctrl+D&gt;
+[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nfcore_rnaseq_example$ nextflow run -r 3.8.1 nf-core/rnaseq -profile singularity --outdir nfcore_rnaseq_pseudoalignment --input samplesheet.csv --skip_alignment --pseudo_aligner salmon --salmon_index annotation/hg38.cdna.ncrna.salmon.index/ --fasta annotation/Homo_sapiens.GRCh38.dna.primary_assembly.fa --gtf annotation/Homo_sapiens.GRCh38.106.gtf
+
+N E X T F L O W  ~  version 21.10.6
+Launching `nf-core/rnaseq` [curious_mercator] - revision: 89bf536ce4 [3.8.1]
+
+
+------------------------------------------------------
+                                        ,--./,-.
+        ___     __   __   __   ___     /,-._.--~&#39;
+  |\ | |__  __ /  ` /  \ |__) |__         }  {
+  | \| |       \__, \__/ |  \ |___     \`-._,-`-,
+                                        `._,._,&#39;
+  nf-core/rnaseq v3.8.1
+------------------------------------------------------
+...
+</code></pre>
+<p>This command uses the <em>skip_alignment</em> parameter along with
+the <em>pseudo_aligner salmon</em> option to tell nextflow to run
+pseudo-alignment only. A complete guide to the available parameters for
+the pipeline can be found <a
+href="https://nf-co.re/rnaseq/3.8.1/parameters">here</a>.</p>
+<p>As was the case for the example <em>nextflow</em> pipeline discussed
+in the previous section, the pipeline generates a <em>work</em>
+directory containing the working directories for the processes, and
+publishes the results of the analysis to the directory specified using
+the <em>outdir</em> parameter (in our case
+<em>nfcore_rnaseq_pseudoalignment</em>).</p>
+<br>
+<div class="key-points">
+<h2>
+<i class="fas fa-thumbtack"></i>Key points:
+</h2>
+<div id="section-2" class="section level2">
+<h2></h2>
+<ul>
+<li>nf-core provides a curated collection of high quality NGS analysis
+pipelines</li>
+<li>The nf-core RNA-Seq pipeline covers preprocessing, alignment,
+quantification and QC, but not differential expression analysis</li>
+<li>By setting the many parameters of the pipeline in different ways, it
+is possible to use it to perform a range of different analyses</li>
+</ul>
+</div>
+</div>
+<p><br></p>
+</div>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

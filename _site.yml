@@ -4,6 +4,8 @@ navbar:
   left:
     - text: "Command line analysis"
       href: lesson1_command_line.html
+    - text: "Automated analysis with NextFlow"
+      href: lesson2_nextflow.html
     - text: "Differential expression"
       href: lesson3_deseq.html
 output_dir: "."

@@ -102,6 +102,20 @@ The data we will we use in this workshop is part of a larger study described in 
 
 The RNA was extracted from HEK293F cells that were transfected with a MOV10 transgene (MOV10 over-expression), MOV10 siRNA (MOV10 knockdown), or an irrelevant siRNA (Control). For now, we will just look at the over-expression and control samples.
 
+<br>
+<div class="resources">
+<h2><i class="fas fa-book"></i> Further Learning</h2>
+If you are new to RNA-seq, this 
+[overview](https://hbctraining.github.io/Intro-to-rnaseq-hpc-salmon-flipped/lessons/01_intro-to-RNAseq.html) provides an explanation of how RNA-seq libraries are prepared and sequenced for short-read data.
+
+* Transcription and RNAs
+* Illumina library preparation
+* Illumina sequencing
+</div>
+<br>
+
+----
+
 ### Raw Data
 
 The raw RNA-seq data is available publicly via [GEO](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE50499) and the [SRA](https://www.ncbi.nlm.nih.gov/sra?term=SRP029367) (sequence read archive). 
