@@ -58,7 +58,7 @@ How could you achieve re-entrancy using scripts? What are the potential challeng
 
 <br>
 <div class="key-points">
-<h2><i class="fas fa-thumbtack"></i>Key points:</h2>
+<h2><i class="fas fa-thumbtack"></i> Key points:</h2>
 ##
  * Specialised workflow tools such as nextflow provide a simple way of specifying pipelines, and provide a wide range of useful features
  * Nextflow is a powerful and popular workflow tool that uses a dataflow model, where analysis steps are specified as individual processes that are connected using channels
@@ -461,12 +461,12 @@ You could also use *nextflow log*, specifying the name of the run:
 
 <div class="resources">
 <h2><i class="fas fa-book"></i> Further Learning</h2>
-Nextflow is a complex and feature rich workflow language, and we have only provided a brief introduction here. For a more in depth introduction to nextflow, see [this course](https://ggrimes.github.io/workflows-nextflow/). To see an example of a simple but more realistic RNA-Seq pipeline, look at the docs [here](https://nextflow.io/example4.html)
+Nextflow is a complex and feature rich workflow language, and we have only provided a brief introduction here. For a more in depth introduction to nextflow, see [this course](https://ggrimes.github.io/workflows-nextflow/). To see an example of a simple but more realistic RNA-Seq pipeline, look at the docs [here](https://nextflow.io/example4.html).
 </div>
 <br>
 
 <div class="key-points">
-<h2><i class="fas fa-thumbtack"></i>Key points:</h2>
+<h2><i class="fas fa-thumbtack"></i> Key points:</h2>
 ##
  * Nextflow can be installed on POSIX based systems, or Windows with WSL, via the command line installer, or via conda
  * Nextflow workflows are written in a high level domain specific language, containing *process* blocks that specify different processes, and a *workflow* block where you specify how to connect the processes together
@@ -579,7 +579,7 @@ As was the case for the example *nextflow* pipeline discussed in the previous se
 
 <br>
 <div class="key-points">
-<h2><i class="fas fa-thumbtack"></i>Key points:</h2>
+<h2><i class="fas fa-thumbtack"></i> Key points:</h2>
 ##
  * nf-core provides a curated collection of high quality NGS analysis pipelines 
  * The nf-core RNA-Seq pipeline covers preprocessing, alignment, quantification and QC, but not differential expression analysis
