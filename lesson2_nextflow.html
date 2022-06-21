@@ -555,14 +555,14 @@ the REVERSE process.</p>
 <p>You can run a <em>nextflow</em> script using the <em>nextflow
 run</em> command:</p>
 <pre class="bash"><code>
-[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop$ mkdir nextflow_example; cd nextflow_example
-[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$ echo one &gt; one.txt
-[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$ echo two &gt; two.txt
-[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$ cat &gt;&gt; simple-pipeline.nf
+[USERNAME]@bifx-core3:~/RNA-seq_workshop$ mkdir nextflow_example; cd nextflow_example
+[USERNAME]@bifx-core3:~/RNA-seq_workshop/nextflow_example$ echo one &gt; one.txt
+[USERNAME]@bifx-core3:~/RNA-seq_workshop/nextflow_example$ echo two &gt; two.txt
+[USERNAME]@bifx-core3:~/RNA-seq_workshop/nextflow_example$ cat &gt;&gt; simple-pipeline.nf
 
 &lt;paste the pipeline code shown above here, then type Ctrl+D&gt;
 
-[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$ nextflow run simple-pipeline.nf
+[USERNAME]@bifx-core3:~/RNA-seq_workshop/nextflow_example$ nextflow run simple-pipeline.nf
 
 N E X T F L O W  ~  version 21.10.6
 Launching `simple-pipeline.nf` [jovial_gates] - revision: 601a9c8121
@@ -570,7 +570,7 @@ executor &gt;  local (4)
 [0a/bac795] process &gt; CAPITALISE (2) [100%] 2 of 2 ✔
 [f5/620bae] process &gt; REVERSE (2)    [100%] 2 of 2 ✔
 
-[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$ head results/*
+[USERNAME]@bifx-core3:~/RNA-seq_workshop/nextflow_example$ head results/*
 
 ==&gt; results/one.caps.txt &lt;==
 ONE
@@ -584,14 +584,12 @@ TWO
 ==&gt; results/two.caps.rev.txt &lt;==
 OWT
 
-[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$
+[USERNAME]@bifx-core3:~/RNA-seq_workshop/nextflow_example$
 </code></pre>
 <p>You can also override the default parameters using command line
 options with the names of the parameters, as follows:</p>
-<pre class="bash"><code>[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$ rm -r ./*
-[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$ echo one &gt; one.txt
-[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$ echo two &gt; two.txt
-[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$ nextflow run simple-pipeline.nf --in one.txt
+<pre class="bash"><code>[USERNAME]@bifx-core3:~/RNA-seq_workshop/nextflow_example$ rm -r ./results
+[USERNAME]@bifx-core3:~/RNA-seq_workshop/nextflow_example$ nextflow run simple-pipeline.nf --in one.txt
 
 N E X T F L O W  ~  version 21.10.6
 Launching `simple-pipeline.nf` [awesome_meitner] - revision: 601a9c8121
@@ -599,7 +597,7 @@ executor &gt;  local (2)
 [ee/1526ca] process &gt; CAPITALISE (1) [100%] 1 of 1 ✔
 [57/22dbd1] process &gt; REVERSE (1)    [100%] 1 of 1 ✔
 
-[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$ head results/*
+[USERNAME]@bifx-core3:~/RNA-seq_workshop/nextflow_example$ head results/*
 
 
 ==&gt; results/one.caps.txt &lt;==
@@ -608,7 +606,7 @@ ONE
 ==&gt; results/one.caps.rev.txt &lt;==
 ENO
 
-[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$</code></pre>
+[USERNAME]@bifx-core3:~/RNA-seq_workshop/nextflow_example$</code></pre>
 <p>In the above example the default value for <em>params.in</em>,
 “*.txt”, was replaced by “one.txt”, causing only that input file to be
 processed.</p>
@@ -625,9 +623,9 @@ create a broken pipeline in which the REVERSE process fails. Running
 this workflow will result in incomplete output. I will then fix the
 broken pipeline, and use the <em>-resume</em> flag to resume it without
 re-running the CAPITALISE process:</p>
-<pre class="bash"><code>[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$ sed &#39;s/ rev / broken_rev /&#39; simple-pipeline.nf &gt; broken-pipeline.nf  # this effectively breaks the rev command, resulting in a pipeline that will fail
+<pre class="bash"><code>[USERNAME]@bifx-core3:~/RNA-seq_workshop/nextflow_example$ sed &#39;s/ rev / broken_rev /&#39; simple-pipeline.nf &gt; broken-pipeline.nf  # this effectively breaks the rev command, resulting in a pipeline that will fail
 
-[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$ nextflow run broken-pipeline.nf
+[USERNAME]@bifx-core3:~/RNA-seq_workshop/nextflow_example$ nextflow run broken-pipeline.nf
 
 N E X T F L O W  ~  version 21.10.6
 Launching `broken-pipeline.nf` [determined_miescher] - revision: 01340331bc
@@ -660,9 +658,9 @@ Work dir:
 
 Tip: you can try to figure out whats wrong by changing to the process work dir and showing the script file named `.command.sh`
 
-[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$ sed --in-place &#39;s/ broken_rev / rev /&#39; broken-pipeline.nf  # this fixes the rev command in broken-pipeline.nf
+[USERNAME]@bifx-core3:~/RNA-seq_workshop/nextflow_example$ sed --in-place &#39;s/ broken_rev / rev /&#39; broken-pipeline.nf  # this fixes the rev command in broken-pipeline.nf
 
-[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$ nextflow run broken-pipeline.nf -resume
+[USERNAME]@bifx-core3:~/RNA-seq_workshop/nextflow_example$ nextflow run broken-pipeline.nf -resume
 
 N E X T F L O W  ~  version 21.10.6
 Launching `broken-pipeline.nf` [soggy_shaw] - revision: 601a9c8121
@@ -670,8 +668,8 @@ executor &gt;  local (2)
 [f3/db9f35] process &gt; CAPITALISE (1) [100%] 2 of 2, cached: 2 ✔
 [e5/5494dc] process &gt; REVERSE (1)    [100%] 2 of 2 ✔
 
-[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$ rm broken-pipeline.nf
-[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$ </code></pre>
+[USERNAME]@bifx-core3:~/RNA-seq_workshop/nextflow_example$ rm broken-pipeline.nf
+[USERNAME]@bifx-core3:~/RNA-seq_workshop/nextflow_example$ </code></pre>
 <p>In the above, example, fixing the pipeline and specifying the
 <em>-resume</em> flag resulted in the pipeline using the existing
 outputs of the CAPITALISE process cached in the work directory, as
@@ -683,7 +681,7 @@ class="section level3">
 <h3>Understanding the output of nextflow workflows</h3>
 <p>Now that we have run our <em>nextflow</em> pipeline, we can view the
 results using the <em>tree</em> command.</p>
-<pre class="bash"><code>[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$ tree -a
+<pre class="bash"><code>[USERNAME]@bifx-core3:~/RNA-seq_workshop/nextflow_example$ tree -a
 
 .
 ├── .nextflow
@@ -805,10 +803,10 @@ Solution
 </h2>
 <p>There are a few ways to do this. You could list the commands that
 were run in each directory as follows:</p>
-<pre class="bash"><code>[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$ find work -name .command.sh -exec bash -c &quot;echo {}&#39;: &#39;; cat {}&quot; \; </code></pre>
+<pre class="bash"><code>[USERNAME]@bifx-core3:~/RNA-seq_workshop/nextflow_example$ find work -name .command.sh -exec bash -c &quot;echo {}&#39;: &#39;; cat {}&quot; \; </code></pre>
 <p>You could also use <em>nextflow log</em>, specifying the name of the
 run:</p>
-<pre class="bash"><code>[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$ nextflow log soggy_shaw -f process,workdir</code></pre>
+<pre class="bash"><code>[USERNAME]@bifx-core3:~/RNA-seq_workshop/nextflow_example$ nextflow log soggy_shaw -f process,workdir</code></pre>
 </div>
 </details>
 </div>
@@ -921,11 +919,11 @@ used if you would like to use iGenomes hosted online</li>
 <p>As an example, we can run the pseudo-alignment steps of the pipeline,
 corresponding to the pink route in the image above. We will use the
 annotation files from the previous session.</p>
-<pre class="bash"><code>[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nextflow_example$ cd ..
-[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop$ mkdir nfcore_rnaseq_example; cd nfcore_rnaseq_example
-[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nfcore_rnaseq_example$ ln -s ../annotation
-[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nfcore_rnaseq_example$ ls ../fastq/*.fq.gz | xargs -I {} ln -s {}
-[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nfcore_rnaseq_example$ cat &gt;&gt; samplesheet.csv
+<pre class="bash"><code>[USERNAME]@bifx-core3:~/RNA-seq_workshop/nextflow_example$ cd ..
+[USERNAME]@bifx-core3:~/RNA-seq_workshop$ mkdir nfcore_rnaseq_example; cd nfcore_rnaseq_example
+[USERNAME]@bifx-core3:~/RNA-seq_workshop/nfcore_rnaseq_example$ ln -s ../annotation
+[USERNAME]@bifx-core3:~/RNA-seq_workshop/nfcore_rnaseq_example$ ls ../fastq/*.fq.gz | xargs -I {} ln -s {}
+[USERNAME]@bifx-core3:~/RNA-seq_workshop/nfcore_rnaseq_example$ cat &gt;&gt; samplesheet.csv
 sample,fastq_1,fastq_2,strandedness
 Control_1,Control_1.fq.gz,,forward
 Control_2,Control_2.fq.gz,,forward
@@ -934,7 +932,7 @@ MOV10_OE_1,MOV10_OE_1.fq.gz,,forward
 MOV10_OE_2,MOV10_OE_2.fq.gz,,forward
 MOV10_OE_3,MOV10_OE_3.fq.gz,,forward
 &lt;Ctrl+D&gt;
-[USERNAME]@bifx-core3:~/public_html/RNA-seq_workshop/nfcore_rnaseq_example$ nextflow run -r 3.8.1 nf-core/rnaseq -profile singularity --outdir nfcore_rnaseq_pseudoalignment --input samplesheet.csv --skip_alignment --pseudo_aligner salmon --salmon_index annotation/hg38.cdna.ncrna.salmon.index/ --fasta annotation/Homo_sapiens.GRCh38.dna.primary_assembly.fa --gtf annotation/Homo_sapiens.GRCh38.106.gtf
+[USERNAME]@bifx-core3:~/RNA-seq_workshop/nfcore_rnaseq_example$ nextflow run -r 3.8.1 nf-core/rnaseq -profile singularity --outdir nfcore_rnaseq_pseudoalignment --input samplesheet.csv --skip_alignment --pseudo_aligner salmon --salmon_index annotation/hg38.cdna.ncrna.salmon.index/ --fasta annotation/Homo_sapiens.GRCh38.dna.primary_assembly.fa --gtf annotation/Homo_sapiens.GRCh38.106.gtf
 
 N E X T F L O W  ~  version 21.10.6
 Launching `nf-core/rnaseq` [curious_mercator] - revision: 89bf536ce4 [3.8.1]

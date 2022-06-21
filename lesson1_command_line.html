@@ -693,7 +693,7 @@ ln -s $PWD ~/public_html/
 ## Create a folder for fastq files
 mkdir fastq
 ## Link the raw data to the fastq folder
-ls /library/training/RNA-seq_analysis/data/lesson_1/fastq/*fq.gz | parallel -j 6 ln -s {}
+ls /library/training/RNA-seq_analysis/data/lesson_1/fastq/*fq.gz | parallel -j 6 ln -s {} fastq/
 ## Link the annotation folder
 ln -s /homes/library/training/RNA-seq_analysis/annotation .
 
