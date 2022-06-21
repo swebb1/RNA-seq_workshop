@@ -371,7 +371,7 @@ reference it, and they also update their values</li>
 <br>
 <div class="key-points">
 <h2>
-<i class="fas fa-thumbtack"></i>Key points:
+<i class="fas fa-thumbtack"></i> Key points:
 </h2>
 <div id="section" class="section level2">
 <h2></h2>
@@ -820,12 +820,12 @@ only provided a brief introduction here. For a more in depth
 introduction to nextflow, see <a
 href="https://ggrimes.github.io/workflows-nextflow/">this course</a>. To
 see an example of a simple but more realistic RNA-Seq pipeline, look at
-the docs <a href="https://nextflow.io/example4.html">here</a></p>
+the docs <a href="https://nextflow.io/example4.html">here</a>.</p>
 </div>
 <p><br></p>
 <div class="key-points">
 <h2>
-<i class="fas fa-thumbtack"></i>Key points:
+<i class="fas fa-thumbtack"></i> Key points:
 </h2>
 <div id="section-1" class="section level2">
 <h2></h2>
@@ -848,7 +848,7 @@ parameters, and provide support for re-entrancy using the
 </div>
 <div id="the-nf-core-rna-seq-pipeline" class="section level2">
 <h2>4. The nf-core RNA-Seq pipeline</h2>
-<p>One of the easiest ways to perform an NGS analysis can to use a
+<p>One of the easiest ways to perform an NGS analysis is to use a
 pre-existing pipeline. A good example of a high quality, flexible, and
 well maintained pre-built <em>nextflow</em> pipeline for RNA-Seq
 analysis is provided by <a href="https://nf-co.re/">nf-core</a>.</p>
@@ -894,12 +894,12 @@ format. Full instructions on how to build a samplesheet are provided <a
 href="https://nf-co.re/rnaseq/3.8.1/usage">here</a>. The samplesheet for
 the example analysis that we are using looks like this:</p>
 <pre class="csv"><code>sample,fastq_1,fastq_2,strandedness
-Control_1,Control_1.fq.gz,,forward
-Control_2,Control_2.fq.gz,,forward
-Control_3,Control_3.fq.gz,,forward
-MOV10_OE_1,MOV10_OE_1.fq.gz,,forward
-MOV10_OE_2,MOV10_OE_2.fq.gz,,forward
-MOV10_OE_3,MOV10_OE_3.fq.gz,,forward</code></pre>
+Control_1,Control_1.fq.gz,,reverse
+Control_2,Control_2.fq.gz,,reverse
+Control_3,Control_3.fq.gz,,reverse
+MOV10_OE_1,MOV10_OE_1.fq.gz,,reverse
+MOV10_OE_2,MOV10_OE_2.fq.gz,,reverse
+MOV10_OE_3,MOV10_OE_3.fq.gz,,reverse</code></pre>
 <p>In order to run the <em>nf-core</em> RNA-Seq workflow, we need to
 specify the following:</p>
 <ul>
@@ -925,12 +925,12 @@ annotation files from the previous session.</p>
 [USERNAME]@bifx-core3:~/RNA-seq_workshop/nfcore_rnaseq_example$ ls ../fastq/*.fq.gz | xargs -I {} ln -s {}
 [USERNAME]@bifx-core3:~/RNA-seq_workshop/nfcore_rnaseq_example$ cat &gt;&gt; samplesheet.csv
 sample,fastq_1,fastq_2,strandedness
-Control_1,Control_1.fq.gz,,forward
-Control_2,Control_2.fq.gz,,forward
-Control_3,Control_3.fq.gz,,forward
-MOV10_OE_1,MOV10_OE_1.fq.gz,,forward
-MOV10_OE_2,MOV10_OE_2.fq.gz,,forward
-MOV10_OE_3,MOV10_OE_3.fq.gz,,forward
+Control_1,Control_1.fq.gz,,reverse
+Control_2,Control_2.fq.gz,,reverse
+Control_3,Control_3.fq.gz,,reverse
+MOV10_OE_1,MOV10_OE_1.fq.gz,,reverse
+MOV10_OE_2,MOV10_OE_2.fq.gz,,reverse
+MOV10_OE_3,MOV10_OE_3.fq.gz,,reverse
 &lt;Ctrl+D&gt;
 [USERNAME]@bifx-core3:~/RNA-seq_workshop/nfcore_rnaseq_example$ nextflow run -r 3.8.1 nf-core/rnaseq -profile singularity --outdir nfcore_rnaseq_pseudoalignment --input samplesheet.csv --skip_alignment --pseudo_aligner salmon --salmon_index annotation/hg38.cdna.ncrna.salmon.index/ --fasta annotation/Homo_sapiens.GRCh38.dna.primary_assembly.fa --gtf annotation/Homo_sapiens.GRCh38.106.gtf
 
@@ -959,10 +959,15 @@ directory containing the working directories for the processes, and
 publishes the results of the analysis to the directory specified using
 the <em>outdir</em> parameter (in our case
 <em>nfcore_rnaseq_pseudoalignment</em>).</p>
+<p>Once complete, you can view the output in the output directory
+<code>nfcore_rnaseq_pseudoalignment</code>, including a
+<strong>MultiQC</strong> summary of all of the tools we have run.</p>
+<p>You can view a MultiQC report from the full size dataset <a
+href="https://bifx-core3.bio.ed.ac.uk/training/RNA-seq_analysis/nextflow_full/results_ensembl/multiqc/star_salmon/multiqc_report.html">here</a>.</p>
 <br>
 <div class="key-points">
 <h2>
-<i class="fas fa-thumbtack"></i>Key points:
+<i class="fas fa-thumbtack"></i> Key points:
 </h2>
 <div id="section-2" class="section level2">
 <h2></h2>
