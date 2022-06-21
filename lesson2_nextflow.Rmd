@@ -478,7 +478,7 @@ Nextflow is a complex and feature rich workflow language, and we have only provi
 
 ## 4. The nf-core RNA-Seq pipeline
 
-One of the easiest ways to perform an NGS analysis can to use a pre-existing pipeline. A good example of a high quality, flexible, and well maintained pre-built *nextflow* pipeline for RNA-Seq analysis is provided by [nf-core](https://nf-co.re/). 
+One of the easiest ways to perform an NGS analysis is to use a pre-existing pipeline. A good example of a high quality, flexible, and well maintained pre-built *nextflow* pipeline for RNA-Seq analysis is provided by [nf-core](https://nf-co.re/). 
 
 This pipeline can be configured to run a wide range of tools, including many of those we used in the previous session. The range of possible workflows that the *nf-core* pipeline covers is shown in the following image, taken from the [nf-core pipeline documentation](https://nf-co.re/rnaseq):
 
