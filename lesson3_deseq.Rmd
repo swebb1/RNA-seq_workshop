@@ -64,7 +64,7 @@ BiocManager::install("org.Hs.eg.db")
 install.packages("tidyverse")
 install.packages("RColorBrewer")
 install.packages("gprofiler2")
-
+install.packages("pheatmap")
 ```
 
 ----

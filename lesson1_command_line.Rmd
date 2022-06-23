@@ -111,6 +111,18 @@ If you are new to RNA-seq, this
 * Transcription and RNAs
 * Illumina library preparation
 * Illumina sequencing
+
+If you are thinking about performing your own RNA-seq experiments then take a look at these [experimental design considerations](https://hbctraining.github.io/DGE_workshop_salmon_online/lessons/experimental_planning_considerations.html):
+
+* How many replicates do I need?
+* How many reads do I need?
+* What type of reads should I use?:
+    * Paired or single end?
+    * What length?
+    * Stranded or unstranded?
+* Confounding factors
+* Batch effects
+
 </div>
 <br>
 
