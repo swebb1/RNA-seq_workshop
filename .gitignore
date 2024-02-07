@@ -4,4 +4,6 @@
 .Ruserdata
 salmon/
 salmon.tar.gz
+condition*
 *.RDS
+*.rds
