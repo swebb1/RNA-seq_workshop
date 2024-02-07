@@ -626,7 +626,7 @@ We will now save these results tables to text files so we can use them outside o
 ## Map each of our result names to a function that saves each table in our results_list
 names(result_list_anno) %>% map(function(x){
   dir.create(x)
-  write_tsv(result_list_anno[[x]],paste0(x,"/DEseq_result.tsv"),col_names = T,)
+  write_tsv(result_list_anno[[x]],paste0(x,"/DEseq_result.tsv"),col_names = T)
 })
 ```
 
